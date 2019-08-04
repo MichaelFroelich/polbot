@@ -1,0 +1,47 @@
+{
+    "roles": {
+        "exclusive": true,
+        "Unverified": {
+            "color": 0,
+            "default": true
+        },
+        "Verified": {
+            "color": 0,
+            "channel": 590219681458159647,
+            "reaction": ":white_check_mark:",
+            "persistent": true,
+            "roles": {
+                "exclusive": true,
+                "Anarchist": {
+                    "exclusive": true,
+                    "Collective Anarchist": {},
+                    "Anarcho-Communist": {},
+                    "Egoist": {
+                        "Stirnerite": {},
+                        "Solipist": {}
+                    },
+                    "Insurrectionary Anarchist": {}
+                },
+                "Communist": {
+                    "exclusive": true,
+                    "Trot": {},
+                    "Leninist": {},
+                    "Maoist": {},
+                    "Marxist": {}
+                },
+                "Fascist": {
+                    "exclusive": true,
+                    "Fallangist": {},
+                    "Strasserite": {},
+                    "German Socialist": {}
+                },
+                "Corporatist": {},
+                "Capitalist": {},
+                "Socialist": {},
+                "Liberal": {},
+                "Conservative": {},
+                "Centrist": {}
+            }
+        }
+    }
+}
