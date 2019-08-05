@@ -10,8 +10,8 @@
             "channel": 590219681458159647,
             "reaction": ":white_check_mark:",
             "persistent": true,
+            "exclusive": true,
             "roles": {
-                "exclusive": true,
                 "Anarchist": {
                     "exclusive": true,
                     "Collective Anarchist": {},
