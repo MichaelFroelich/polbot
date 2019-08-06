@@ -10,7 +10,6 @@ const fs = require('fs');
 const RoleParser = require('./roleparser.js');
 const Command = require('./command.js');
 const Token = fs.readFileSync(TokenFile, 'utf8');
-
 const client = new Discord.Client();
 
 client.on('ready', () => {
@@ -28,6 +27,11 @@ client.on('messageReactionRemove', (reaction, user) => RoleParser.removeRole(rea
 fs.watchFile(RolesFile, (curr, prev) => RoleParser.loadRoles(client));
 
 client.login(Token).then(value => {
+	fs.writeFile(PidFile, process.pid, function (err) {
+		if (err)
+			return console.log(err);
+	});
+
 	Log.write('started successfuly');
 	RoleParser.loadRoles(client);
 	//Infinite loop, required for the file listener
@@ -37,5 +41,3 @@ client.login(Token).then(value => {
 	Log.write('failed to login because\t' + reason.message);
 	process.exit(); //Exit the script
 });
-
-

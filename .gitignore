@@ -69,3 +69,6 @@ token
 
 # Debug log
 debug.log
+
+# PID
+pid.txt
