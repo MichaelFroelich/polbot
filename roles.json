@@ -1,6 +1,6 @@
 {
+    "exclusive": true,
     "roles": {
-        "exclusive": true,
         "Unverified": {
             "color": 0,
             "default": true
@@ -9,8 +9,7 @@
             "color": 0,
             "channel": 590219681458159647,
             "reaction": ":white_check_mark:",
-            "persistent": true,
-            "exclusive": true,
+            "persistent": true,  
             "roles": {
                 "Anarchist": {
                     "exclusive": true,

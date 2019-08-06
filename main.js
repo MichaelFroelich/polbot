@@ -1,28 +1,41 @@
-const ROLES_FILES = "./roles.json";
-const COMMAND_CHARACTER = "##";
-
 /**
  * 
  * 
  * 
  */
-
+require('./constants.js');
 const Discord = require('discord.js');
+const Log = require('./log.js');
 const fs = require('fs');
 const RoleParser = require('./roleparser.js');
 const Command = require('./command.js');
+const Token = fs.readFileSync(TokenFile, 'utf8');
 
 const client = new Discord.Client();
 
-RoleParser.loadRoles();
-fs.watchFile(ROLES_FILES, (curr, prev) => RoleParser.loadRoles());
+client.on('ready', () => {
+	client.user.setStatus('online');
+});
 
 client.on('message', message => {
-	if(message.content.startsWith(COMMAND_CHARACTER)) {
+	if (message.content.startsWith(CommandCharacter)) {
 		Command.command(message);
 	}
 });
-
 client.on('messageReactionAdd', (reaction, user) => RoleParser.setRole(reaction, user));
 client.on('messageReactionRemove', (reaction, user) => RoleParser.removeRole(reaction, user));
-client.login('your-token-goes-here'); //Finally, login
+
+fs.watchFile(RolesFile, (curr, prev) => RoleParser.loadRoles(client));
+
+client.login(Token).then(value => {
+	Log.write('started successfuly');
+	RoleParser.loadRoles(client);
+	//Infinite loop, required for the file listener
+	setInterval(() => {
+	}, 1000)
+}, reason => {
+	Log.write('failed to login because\t' + reason.message);
+	process.exit(); //Exit the script
+});
+
+

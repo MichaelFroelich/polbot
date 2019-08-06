@@ -63,3 +63,9 @@ typings/
 .vs/ProjectSettings.json
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
+
+# Token file, this should be private
+token
+
+# Debug log
+debug.log
