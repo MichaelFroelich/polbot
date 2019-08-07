@@ -27,16 +27,12 @@ exports.loadRoles = function(CurrentClient) {
     }
 }
 
-
-
 function setRoles(parentRole, currentRole){
     checkIfRoleExists(currentRole);
-
-
     var roleName = currentRole[0];
     var defaultedRole = Object.assign(parentRole, currentRole[1]);
     for (let property in defaultedRole) {
-        for(let guild in Guilds.entries()) {
+        for(let guild in Guilds.values()) {
             //guild.createRole();
             console.log('start making roles here');
         }
@@ -47,10 +43,9 @@ function setRoles(parentRole, currentRole){
  * TODO: some fuzzy detection here
  */
 function checkIfRoleExists(currentRole) {
-    let entree = Guilds.entries();
-    for(let guild of Guilds.entries()) {
-        for(let role of guild[1].roles.entries()) {
-            //guild.createRole();
+    for(let guild of Guilds.values()) {
+        for(let role of guild.roles.values()) {
+            guild.createRole();
             console.log('start making roles here');
         }
     }
