@@ -4,7 +4,7 @@
     "roles": {
         "Unverified": {
             "color": 0,
-            "default": true
+            "initial": true
         },
         "Verified": {
             "color": 0,

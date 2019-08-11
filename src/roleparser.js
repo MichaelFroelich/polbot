@@ -6,26 +6,40 @@ const DefaultRole = {
     exclusive: false,
     persistent: false,
     color: 0,
-    reaction: null, //moderator assigned or default is true
-    channel: null, //moderator assigned or default is true
-    default: false,
+    reaction: null, //moderator assigned or initial is true
+    channel: null, //moderator assigned or initial is true
+    initial: false,//a role everyone gets initially
     roles: {}
 };
 
 var Client;
 var Guilds;
+var Sets;
 
 /**
  * @param {Client} CurrentClient
  */
 exports.loadRoles = function (CurrentClient) {
     Client = CurrentClient;
-    Guilds = Client.guilds;
+    populateGuildSets(Client.guilds);
     var roles = require(RolesFile);
     var defaultedRoles = Object.assign(DefaultRole, roles); //The root of the roles file forms the current default
 
     for (let role of Object.entries(defaultedRoles.roles)) {
         setRoles(defaultedRoles, role);
+    }
+}
+
+function populateGuildSets(guilds) {
+    Guilds = guilds; //why not
+    Sets = new Map();
+    
+    for (let guild of Guilds.values()) {
+        roleSet = FuzzySet();
+        for(let role of guild.roles.values()) {
+            roleSet.add(role.name);
+        }
+        Sets.set(guild.name, roleSet);
     }
 }
 
@@ -44,13 +58,17 @@ function setRoles(parentRole, currentRole) {
 function createRole(role, roleName) {
     var mappedRole = mapRole(role, roleName);
     for (let guild of Guilds.values()) {
-        let existingRole = checkIfRoleExists(roleName);
+        let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
             guild.createRole(mappedRole);
         }
         else {
+            if(existingRole.name === "@everyone") {
+                mappedRole.name = "@everyone"; // do not change this name
+            }
             existingRole.edit(mappedRole);
         }
+        
             //TODO: other stuff, like check existing reactors
     }
 }
@@ -64,18 +82,24 @@ function mapRole(role, roleName) {
     };
 }
 
-/**
- * TODO: some fuzzy detection here
- */
 function checkIfRoleExists(roleName, guild) {
-    //TODO: Figure out how to populate the fuzzset
-
-    a = FuzzySet.FuzzySet(getAllRolesFromGuild(guild));
-    var val = a.get(roleName);
-    if (val[0] > EqualityAmount) {
-        return val[1];
+    a = Sets.get(guild.name)
+    var results = a.get(roleName);
+    if(results.length > 0) {
+        result = results[0];
+        if(result[0] > EqualityAmount) {
+            return getRoleFromGuild(result[1], guild);
+        }
     }
     return null;
+}
+
+function getRoleFromGuild(roleName, guild) {
+    for(let role of guild.roles.values()) {
+        if(role.name == roleName) {
+            return role;
+        }
+    }
 }
 
 exports.setRole = function () {
