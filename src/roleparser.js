@@ -1,4 +1,6 @@
 require('./constants.js');
+const FuzzySet = require('fuzzyset.js');
+const EqualityAmount = 0.5;
 
 const DefaultRole = {
     exclusive: false,
@@ -36,43 +38,45 @@ function setRoles(parentRole, currentRole) {
             setRoles(defaultedRole, role);
         }
     }
-    createRole(defaultedRole); 
+    createRole(defaultedRole, roleName);
 }
 
-function createRole(defaultedRole, ) {
-    var mappedRole = mapRole(defaultedRole);
-    /*
-    for (let property in defaultedRole) {
-        for (let guild in Guilds.values()) {
-            let existentRole = checkIfRoleExists(currentRole, guild);
-            if (existentRole != null) {
-                existentRole.edit();
-            }
-            else {
-                guild.createRole();
-            }
-            console.log('start making roles here');
+function createRole(role, roleName) {
+    var mappedRole = mapRole(role, roleName);
+    for (let guild of Guilds.values()) {
+        let existingRole = checkIfRoleExists(roleName);
+        if (existingRole == null) {
+            guild.createRole(mappedRole);
         }
-    }*/
+        else {
+            existingRole.edit(mappedRole);
+        }
+            //TODO: other stuff, like check existing reactors
+    }
 }
 
-function mapRole(role) {
+function mapRole(role, roleName) {
     return {
-
+        name: roleName,
+        color: role.color,
+        hoist: true,
+        permissions: 0 //for now
     };
 }
 
 /**
  * TODO: some fuzzy detection here
  */
-function checkIfRoleExists(currentRole) {
-    for (let guild of Guilds.values()) {
-        for (let role of guild.roles.values()) {
-            //guild.createRole();
-            console.log('start making roles here');
-        }
+function checkIfRoleExists(roleName, guild) {
+    //TODO: Figure out how to populate the fuzzset
+
+    a = FuzzySet.FuzzySet(getAllRolesFromGuild(guild));
+    var val = a.get(roleName);
+    if (val[0] > EqualityAmount) {
+        return val[1];
     }
-    //czechking
+}
+return null;
 }
 
 exports.setRole = function () {
@@ -82,13 +86,3 @@ exports.setRole = function () {
 exports.removeRole = function () {
     return "Hello";
 }
-
-
-/*
-guild.createRole({
-  name: 'Super Cool People',
-  color: 'BLUE',
-})
-  .then(role => console.log(`Created new role with name ${role.name} and color ${role.color}`))
-  .catch(console.error)
-  */

@@ -9,6 +9,7 @@
   "author": "Michael Froelich (Blue and Black)",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^11.5.1"
+    "discord.js": "^11.5.1",
+    "fuzzyset.js": "0.0.8"
   }
 }
