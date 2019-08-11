@@ -75,8 +75,7 @@ function checkIfRoleExists(roleName, guild) {
     if (val[0] > EqualityAmount) {
         return val[1];
     }
-}
-return null;
+    return null;
 }
 
 exports.setRole = function () {
