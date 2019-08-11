@@ -1,5 +1,6 @@
 {
     "exclusive": true,
+    "channel": 590219681458159647,
     "roles": {
         "Unverified": {
             "color": 0,
@@ -7,39 +8,127 @@
         },
         "Verified": {
             "color": 0,
-            "channel": 590219681458159647,
+            "channel": 586656840939601930,
             "reaction": ":white_check_mark:",
-            "persistent": true,  
+            "persistent": true,
             "roles": {
                 "Anarchist": {
-                    "exclusive": true,
-                    "Collective Anarchist": {},
-                    "Anarcho-Communist": {},
-                    "Egoist": {
-                        "Stirnerite": {},
-                        "Solipist": {}
-                    },
-                    "Insurrectionary Anarchist": {}
+                    "color": "BLACK",
+                    "reaction": ":one:",
+                    "roles": {
+                        "Collective Anarchist": {},
+                        "Anarcho-Communist": {},
+                        "Egoist": {
+                            "Stirnerite": {},
+                            "Solipist": {}
+                        },
+                        "Insurrectionary Anarchist": {}
+                    }
                 },
-                "Communist": {
-                    "exclusive": true,
-                    "Trot": {},
-                    "Leninist": {},
-                    "Maoist": {},
-                    "Marxist": {}
+                "Socialist": {
+                    "color": "RED",
+                    "reaction": ":two:",
+                    "roles": {
+                        "Trot": {},
+                        "Leninist": {},
+                        "Maoist": {},
+                        "Marxist": {}
+                    }
                 },
                 "Fascist": {
-                    "exclusive": true,
-                    "Fallangist": {},
-                    "Strasserite": {},
-                    "German Socialist": {}
+                    "color": "ORANGE",
+                    "reaction": ":three:",
+                    "roles": {
+                        "Fallangist": {},
+                        "Strasserite": {},
+                        "German Socialist": {},
+                        "Blue Shirt Society": {}
+                    }
                 },
-                "Corporatist": {},
-                "Capitalist": {},
-                "Socialist": {},
-                "Liberal": {},
-                "Conservative": {},
-                "Centrist": {}
+                "Capitalist": {
+                    "color": "GOLD",
+                    "reaction": ":four:",
+                    "roles": {
+                        "Corporatist": {},
+                        "Finance Capitalist": {},
+                        "Democratic Capitalist": {},
+                        "Laissez-faire Capitalist": {},
+                        "Mercantilist": {},
+                        "Industrialist": {}
+                    }
+                },
+                "Liberal": {
+                    "color": "BLUE",
+                    "reaction": ":five:",
+                    "roles": {
+                        "Democratic Socialist": {},
+                        "Classical Liberal": {},
+                        "Neo-Liberalist": {},
+                        "Syndicalist": {},
+                        "Alcist": {}
+                    }
+                },
+                "Conservative": {
+                    "color": "PURPLE",
+                    "reaction": ":six:",
+                    "roles": {
+                        "Monarchist": {},
+                        "Theocrat": {},
+                        "Traditionalist": {}
+                    }
+                },
+                "Centrist": {
+                    "reaction": ":seven:",
+                    "color": "GREEN"
+                },
+                "Religious": {
+                    "exclusive": false,
+                    "roles": {
+                        "Buddhist": {
+                            "reaction": ":regional_indicator_a:"
+                        },
+                        "Hindu": {
+                            "reaction": ":regional_indicator_b:"
+                        },
+                        "Shia": {
+                            "reaction": ":regional_indicator_c:"
+                        },
+                        "Sunni": {
+                            "reaction": ":regional_indicator_d:"
+                        },
+                        "Catholic": {
+                            "reaction": ":regional_indicator_e:"
+                        },
+                        "Orthodox": {
+                            "reaction": ":regional_indicator_f:"
+                        },
+                        "Protestant": {
+                            "reaction": ":regional_indicator_g:"
+                        },
+                        "Jain": {
+                            "reaction": ":regional_indicator_h:"
+                        },
+                        "Zoroastrian": {
+                            "reaction": ":regional_indicator_i:"
+                        },
+                        "Judaism": {
+                            "reaction": ":regional_indicator_j:"
+                        },
+                        "Neo-Pagan": {
+                            "reaction": ":regional_indicator_k:",
+                            "channel": null,
+                            "roles": {
+                                "Ásatrúan": {},
+                                "Druidic": {},
+                                "Romuva": {},
+                                "Hellenic Revival": {},
+                                "Tengri": {},
+                                "Rodnovery": {},
+                                "Chthonic": {}
+                            }
+                        }
+                    }
+                }
             }
         }
     }
