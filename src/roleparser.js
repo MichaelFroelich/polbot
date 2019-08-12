@@ -20,11 +20,39 @@ var RoleChannels;
 var Roles;
 
 exports.setRole = function (reaction, user) {
-    return "Hello";
+    var id = reaction.message.channel.id;
+    var guild = reaction.message.guild;
+    if (RoleChannels.has(id)) {
+        for (let role of Roles.entries()) {
+            if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
+                roleId = getRoleFromGuild(role.name, guild).id;
+                guild.members.get(user.id).addRole(roleId);
+            }
+        }
+    }
 }
 
 exports.removeRole = function (reaction, user) {
-    return "Hello";
+    var id = reaction.message.channel.id;
+    var guild = reaction.message.guild;
+    if (RoleChannels.has(id)) {
+        for (let role of Roles.entries()) {
+            if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
+                roleId = getRoleFromGuild(role.name, guild).id;
+                guild.members.get(user.id).removeRole(roleId);
+            }
+        }
+    }
+}
+
+function reactionEquals(discordReaction, ourReaction) {
+    if (discordReaction.identifier == ourReaction ||
+        discordReaction.id == ourReaction ||
+        discordReaction.name == ourReaction) {
+        return true;
+    }
+    else
+        return false
 }
 
 /**
@@ -73,7 +101,7 @@ function setRoles(parentRole, currentRole) {
 
     //finished finding all the roles, now we add them
     var mappedRole = mapRole(defaultedRole, roleName);
-    addRoleChannel(defaultedRole.channel);
+    addRoleChannel(defaultedRole.channels);
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
@@ -91,10 +119,6 @@ function setRoles(parentRole, currentRole) {
     Roles.set(roleName, defaultedRole);
 }
 
-/**
- * Itterates all role channels associated to this role
- * @param {*} roleChannels 
- */
 function addRoleChannel(roleChannels) {
     for (let roleChannel of roleChannels) {
         if (RoleChannels.has(roleChannel)) {
@@ -112,10 +136,12 @@ function addRoleChannel(roleChannels) {
 
 function mapRole(role, roleName) {
     return {
-        name: roleName,
-        color: role.color,
-        hoist: false
-        //permissions: 0 //for now
+        data: {
+            name: roleName,
+            color: role.color,
+            hoist: false
+            //permissions: 0 //for now
+        }
     };
 }
 
@@ -148,5 +174,3 @@ function rolesEqual(first, second) {
         return false
     }
 }
-
-//let myRole = message.guild.roles.find(role => role.name === "Moderators");
