@@ -1,6 +1,6 @@
 {
     "exclusive": true,
-    "channel": 590219681458159647,
+    "channels": [590219681458159647],
     "roles": {
         "Unverified": {
             "color": 0,
@@ -8,13 +8,14 @@
         },
         "Verified": {
             "color": 0,
-            "channel": 586656840939601930,
+            "channels": [586656840939601930],
             "reaction": ":white_check_mark:",
             "persistent": true,
             "roles": {
                 "Anarchist": {
                     "color": "BLACK",
                     "reaction": ":one:",
+                    "persistent": false,
                     "roles": {
                         "Collective Anarchist": {},
                         "Anarcho-Communist": {},
@@ -28,6 +29,7 @@
                 "Socialist": {
                     "color": "RED",
                     "reaction": ":two:",
+                    "persistent": false,
                     "roles": {
                         "Trot": {},
                         "Leninist": {},
@@ -38,6 +40,7 @@
                 "Fascist": {
                     "color": "ORANGE",
                     "reaction": ":three:",
+                    "persistent": false,
                     "roles": {
                         "Fallangist": {},
                         "Strasserite": {},
@@ -48,6 +51,7 @@
                 "Capitalist": {
                     "color": "GOLD",
                     "reaction": ":four:",
+                    "persistent": false,
                     "roles": {
                         "Corporatist": {},
                         "Finance Capitalist": {},
@@ -60,6 +64,7 @@
                 "Liberal": {
                     "color": "BLUE",
                     "reaction": ":five:",
+                    "persistent": false,
                     "roles": {
                         "Democratic Socialist": {},
                         "Classical Liberal": {},
@@ -71,6 +76,7 @@
                 "Conservative": {
                     "color": "PURPLE",
                     "reaction": ":six:",
+                    "persistent": false,
                     "roles": {
                         "Monarchist": {},
                         "Theocrat": {},
@@ -78,11 +84,13 @@
                     }
                 },
                 "Centrist": {
+                    "persistent": false,
                     "reaction": ":seven:",
                     "color": "GREEN"
                 },
                 "Religious": {
                     "exclusive": false,
+                    "persistent": false,
                     "roles": {
                         "Buddhist": {
                             "reaction": ":regional_indicator_a:"
@@ -118,12 +126,15 @@
                             "reaction": ":regional_indicator_k:",
                             "channel": null,
                             "roles": {
+                                "Wiccan": {},
+                                "Hermitian": {},
                                 "Ásatrúan": {},
                                 "Druidic": {},
-                                "Romuva": {},
+                                "Dievturība Romuva": {},
                                 "Hellenic Revival": {},
                                 "Tengri": {},
                                 "Rodnovery": {},
+                                "Kemetic": {},
                                 "Chthonic": {}
                             }
                         }

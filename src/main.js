@@ -18,7 +18,7 @@ try {
 }
 
 client.on('ready', () => onStart());
-client.on('message', message => Command.command(message));
+client.on('message', message => Command.command(client, message));
 client.on('messageReactionAdd', (reaction, user) => RoleParser.setRole(reaction, user));
 client.on('messageReactionRemove', (reaction, user) => RoleParser.removeRole(reaction, user));
 

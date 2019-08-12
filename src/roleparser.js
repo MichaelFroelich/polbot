@@ -1,7 +1,7 @@
 require('./constants.js');
 const FuzzySet = require('fuzzyset.js');
 const EqualityAmount = 0.5;
-
+const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
 const DefaultRole = {
     exclusive: false,
     persistent: false,
@@ -12,64 +12,101 @@ const DefaultRole = {
     roles: {}
 };
 
+var position;
 var Client;
 var Guilds;
-var Sets;
+var GuildSets;
+var RoleChannels;
+var Roles;
+
+exports.setRole = function (reaction, user) {
+    return "Hello";
+}
+
+exports.removeRole = function (reaction, user) {
+    return "Hello";
+}
 
 /**
  * @param {Client} CurrentClient
  */
 exports.loadRoles = function (CurrentClient) {
+    position = StartingPosition;
     Client = CurrentClient;
-    populateGuildSets(Client.guilds);
+    Guilds = Client.guilds;
     var roles = require(RolesFile);
-    var defaultedRoles = Object.assign(DefaultRole, roles); //The root of the roles file forms the current default
+    RoleChannels = new Map();
+    Roles = new Map();
 
+    populateGuildSets(Client.guilds);
+    var defaultedRoles = Object.assign(DefaultRole, roles); //The root of the roles file forms the current default
     for (let role of Object.entries(defaultedRoles.roles)) {
         setRoles(defaultedRoles, role);
     }
+
+    Roles;
 }
 
-function populateGuildSets(guilds) {
-    Guilds = guilds; //why not
-    Sets = new Map();
-    
+function populateGuildSets() {
+    GuildSets = new Map();
     for (let guild of Guilds.values()) {
         roleSet = FuzzySet();
-        for(let role of guild.roles.values()) {
+        for (let role of guild.roles.values()) {
             roleSet.add(role.name);
         }
-        Sets.set(guild.name, roleSet);
+        GuildSets.set(guild.name, roleSet);
     }
 }
 
 function setRoles(parentRole, currentRole) {
     var roleName = currentRole[0];
     var defaultedRole = Object.assign(parentRole, currentRole[1]);
+    defaultedRole.position = position++;
     defaultedRole.roles = currentRole[1].roles;
+
+    //find all the roles in the json structure
     if (defaultedRole.roles !== undefined) {
         for (let role of Object.entries(defaultedRole.roles)) {
             setRoles(defaultedRole, role);
         }
     }
-    createRole(defaultedRole, roleName);
-}
 
-function createRole(role, roleName) {
-    var mappedRole = mapRole(role, roleName);
+    //finished finding all the roles, now we add them
+    var mappedRole = mapRole(defaultedRole, roleName);
+    addRoleChannel(defaultedRole.channel);
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
             guild.createRole(mappedRole);
         }
         else {
-            if(existingRole.name === "@everyone") {
+            if (existingRole.name === "@everyone") {
                 mappedRole.name = "@everyone"; // do not change this name
             }
-            existingRole.edit(mappedRole);
+            if (!rolesEqual(existingRole, mappedRole)) { //save some time and skip this if they're equal
+                existingRole.edit(mappedRole);
+            }
         }
-        
-            //TODO: other stuff, like check existing reactors
+    }
+    Roles.set(roleName, defaultedRole);
+}
+
+/**
+ * Itterates all role channels associated to this role
+ * @param {*} roleChannels 
+ */
+function addRoleChannel(roleChannels) {
+    for (let roleChannel of roleChannels) {
+        if (RoleChannels.has(roleChannel)) {
+            return; //nothing to do here
+        }
+        for (let guild of Guilds.values()) {
+            for (let channel of guild.channels.entries()) {
+                if (roleChannel === channel[0]) {
+                    RoleChannels.set(channel[0], channel[1]);
+                }
+            }
+        }
     }
 }
 
@@ -77,17 +114,17 @@ function mapRole(role, roleName) {
     return {
         name: roleName,
         color: role.color,
-        hoist: true,
-        permissions: 0 //for now
+        hoist: false
+        //permissions: 0 //for now
     };
 }
 
 function checkIfRoleExists(roleName, guild) {
-    a = Sets.get(guild.name)
+    a = GuildSets.get(guild.name)
     var results = a.get(roleName);
-    if(results.length > 0) {
+    if (results !== null && results.length > 0) {
         result = results[0];
-        if(result[0] > EqualityAmount) {
+        if (result[0] > EqualityAmount) {
             return getRoleFromGuild(result[1], guild);
         }
     }
@@ -95,17 +132,21 @@ function checkIfRoleExists(roleName, guild) {
 }
 
 function getRoleFromGuild(roleName, guild) {
-    for(let role of guild.roles.values()) {
-        if(role.name == roleName) {
+    for (let role of guild.roles.values()) {
+        if (role.name == roleName) {
             return role;
         }
     }
 }
 
-exports.setRole = function () {
-    return "Hello";
+//Todo: remember to add any new fields here or do reflection
+function rolesEqual(first, second) {
+    if (first.name === second.name && first.color === second.color) {
+        return true;
+    }
+    else {
+        return false
+    }
 }
 
-exports.removeRole = function () {
-    return "Hello";
-}
+//let myRole = message.guild.roles.find(role => role.name === "Moderators");
