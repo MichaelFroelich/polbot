@@ -125,6 +125,7 @@ function setRoles(parentRole, currentRole) {
             }
         }
     }
+    defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
     Roles.set(roleName, defaultedRole);
     if (defaultedRole.initial) {
         InitialRoles.set(roleName, defaultedRole);
@@ -148,12 +149,10 @@ function addRoleChannel(roleChannels) {
 
 function mapRole(role, roleName) {
     return {
-        data: {
-            name: roleName,
-            color: role.color,
-            hoist: false
-            //permissions: 0 //for now
-        }
+        name: roleName,
+        color: role.color,
+        hoist: false
+        //permissions: 0 //for now
     };
 }
 
