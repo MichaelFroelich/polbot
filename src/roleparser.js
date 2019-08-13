@@ -60,14 +60,11 @@ exports.removeRole = function (reaction, user) {
 }
 
 function reactionEquals(discordReaction, ourReaction) {
-    var bla = discordReaction.identifier;
-    var blu = discordReaction.id;
-    var na =  discordReaction.name;
-    var fu = discordReaction.toString();
-    emojis = Client.emojis;
+    var unicode = discordReaction.identifier.replace(new RegExp('%', 'g'),'');
     if (discordReaction.identifier == ourReaction ||
         discordReaction.id == ourReaction ||
         discordReaction.name == ourReaction ||
+        discordReaction.identifier.endsWith(unicode) ||
         discordReaction == ourReaction) {
         return true;
     }
@@ -212,11 +209,7 @@ function processReactions(role) {
                             user = message.member.addRole(getRoleFromGuild(role.name,channel.guild));
                         }
                     }
-                }/*
-                for (let reactor in reactors) {
-                    roleId = getRoleFromGuild(role.name, channel.guild).id;
-                    guild.members.get(reactor.id).addRole(roleId);
-                }*/
+                }
             },
             reason => LogFail("fetch messages", reason));
     }
