@@ -7,7 +7,7 @@ const DefaultRole = {
     persistent: false,
     color: 0,
     reaction: null, //moderator assigned or initial is true
-    channel: null, //moderator assigned or initial is true
+    channels: [], //moderator assigned or initial is true
     initial: false,//a role everyone gets initially
     roles: {}
 };
@@ -18,6 +18,15 @@ var Guilds;
 var GuildSets;
 var RoleChannels;
 var Roles;
+var InitialRoles;
+
+exports.guildMemberAdd = function (member) {
+    if (!member.user.bot) {
+        for (let role of InitialRoles.keys()) {
+            member.addRole(getRoleFromGuild(role, member.guild));
+        }
+    }
+}
 
 exports.setRole = function (reaction, user) {
     var id = reaction.message.channel.id;
@@ -65,9 +74,9 @@ exports.loadRoles = function (CurrentClient) {
     var roles = require(RolesFile);
     RoleChannels = new Map();
     Roles = new Map();
-
+    InitialRoles = new Map();
     populateGuildSets(Client.guilds);
-    var defaultedRoles = Object.assign(DefaultRole, roles); //The root of the roles file forms the current default
+    var defaultedRoles = AssignUndefined(roles, DefaultRole); //The root of the roles file forms the current default
     for (let role of Object.entries(defaultedRoles.roles)) {
         setRoles(defaultedRoles, role);
     }
@@ -88,7 +97,7 @@ function populateGuildSets() {
 
 function setRoles(parentRole, currentRole) {
     var roleName = currentRole[0];
-    var defaultedRole = Object.assign(parentRole, currentRole[1]);
+    var defaultedRole = AssignUndefined(currentRole[1], parentRole);
     defaultedRole.position = position++;
     defaultedRole.roles = currentRole[1].roles;
 
@@ -117,6 +126,9 @@ function setRoles(parentRole, currentRole) {
         }
     }
     Roles.set(roleName, defaultedRole);
+    if (defaultedRole.initial) {
+        InitialRoles.set(roleName, defaultedRole);
+    }
 }
 
 function addRoleChannel(roleChannels) {
@@ -173,4 +185,16 @@ function rolesEqual(first, second) {
     else {
         return false
     }
+}
+
+function AssignUndefined(destination, source) {
+    var toreturn = new Object();
+    for(let property of Object.keys(source)) {
+        if(!destination.hasOwnProperty(property)) {
+            toreturn[property] = source[property];
+        } else {
+            toreturn[property] = destination[property];
+        }
+    }
+    return toreturn;
 }
