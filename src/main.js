@@ -39,7 +39,7 @@ function onLogin(value){
 			return console.log(err);
 	});
 	Log.write('Started successfuly');
-	RoleParser.loadRoles(client);
+	RoleParser.loadRoles(client); 
 	//Infinite loop, required for the file listener
 	setInterval(() => {
 		//sendHeartBeat(); //TODO:

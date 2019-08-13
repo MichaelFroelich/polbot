@@ -18,7 +18,6 @@ var position;
 var Client;
 var Guilds;
 var GuildSets;
-var RoleChannels;
 var Roles;
 var InitialRoles;
 
@@ -33,11 +32,13 @@ exports.guildMemberAdd = function (member) {
 exports.setRole = function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
-    if (RoleChannels.has(id)) {
-        for (let role of Roles.entries()) {
-            if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
-                roleId = getRoleFromGuild(role.name, guild).id;
-                guild.members.get(user.id).addRole(roleId);
+    for (let RoleChannels of Roles.values()) {
+        if (RoleChannels.has(id)) {
+            for (let role of Roles.entries()) {
+                if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
+                    roleId = getRoleFromGuild(role.name, guild).id;
+                    guild.members.get(user.id).addRole(roleId);
+                }
             }
         }
     }
@@ -46,20 +47,28 @@ exports.setRole = function (reaction, user) {
 exports.removeRole = function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
-    if (RoleChannels.has(id)) {
-        for (let role of Roles.entries()) {
-            if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
-                roleId = getRoleFromGuild(role.name, guild).id;
-                guild.members.get(user.id).removeRole(roleId);
+    for (let RoleChannels of Roles.values()) {
+        if (RoleChannels.has(id)) {
+            for (let role of Roles.entries()) {
+                if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
+                    roleId = getRoleFromGuild(role.name, guild).id;
+                    guild.members.get(user.id).removeRole(roleId);
+                }
             }
         }
     }
 }
 
 function reactionEquals(discordReaction, ourReaction) {
+    var bla = discordReaction.identifier;
+    var blu = discordReaction.id;
+    var na =  discordReaction.name;
+    var fu = discordReaction.toString();
+    emojis = Client.emojis;
     if (discordReaction.identifier == ourReaction ||
         discordReaction.id == ourReaction ||
-        discordReaction.name == ourReaction) {
+        discordReaction.name == ourReaction ||
+        discordReaction == ourReaction) {
         return true;
     }
     else
@@ -74,7 +83,6 @@ exports.loadRoles = function (CurrentClient) {
     Client = CurrentClient;
     Guilds = Client.guilds;
     var roles = require(RolesFile);
-    RoleChannels = new Map();
     Roles = new Map();
     InitialRoles = new Map();
     populateGuildSets(Client.guilds);
@@ -115,12 +123,12 @@ function setRoles(parentRole, currentRole) {
 
     //finished finding all the roles, now we add them
     var mappedRole = mapRole(defaultedRole, roleName);
-    addRoleChannel(defaultedRole.channels);
+    defaultedRole.channels = addRoleChannel(defaultedRole.channels);
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
             guild.createRole(mappedRole).then(
-                value => Log.LogSuccess("create role", value), 
+                value => Log.LogSuccess("create role", value),
                 reason => LogFail("create role", reason));
         }
         else {
@@ -129,26 +137,34 @@ function setRoles(parentRole, currentRole) {
             }
             if (!rolesEqual(existingRole, mappedRole)) { //save some time and skip this if they're equal
                 existingRole.edit(mappedRole).then(
-                    value => Log.LogSuccess("edit role", value), 
+                    value => Log.LogSuccess("edit role", value),
                     reason => LogFail("edit role", reason));
             }
         }
     }
-    processReactions(defaultedRole);
+    processReactions(defaultedRole); //check the role channels
+    //processVacancies(defaultedRole); //check the role channels
 }
 
 function addRoleChannel(roleChannels) {
+    var channels = new Map();
     for (let roleChannel of roleChannels) {
-        if (RoleChannels.has(roleChannel)) {
-            return; //nothing to do here
-        }
         for (let guild of Guilds.values()) {
             for (let channel of guild.channels.entries()) {
-                if (roleChannel === channel[0]) {
-                    RoleChannels.set(channel[0], channel[1]);
+                if (channelsEqual(channel, roleChannel)) {
+                    channels.set(channel[0], channel[1]);
                 }
             }
         }
+    }
+    return channels;
+}
+
+function channelsEqual(discordsChannel, ourChannel) {
+    if(ourChannel == discordsChannel.id || ourChannel == discordsChannel.name) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -165,9 +181,9 @@ function checkIfRoleExists(roleName, guild) {
     a = GuildSets.get(guild.name)
     var results = a.get(roleName);
     if (results !== null && results.length > 0) {
-        for(i = 0 ; i < results.length ; i++) {
+        for (i = 0; i < results.length; i++) {
             result = results[i];
-            if(Roles.has(result[1]) && result[0] < 1) 
+            if (Roles.has(result[1]) && result[0] < 1)
                 continue;
             if (result[0] > EqualityAmount) {
                 return getRoleFromGuild(result[1], guild);
@@ -178,22 +194,30 @@ function checkIfRoleExists(roleName, guild) {
 }
 
 function processReactions(role) {
-
-    mychan = "513321055645859855";
-    myguild = Guilds.values().next().value;
-    channels = myguild.channels;
-    realchan = myguild.channels.get(mychan);
-    getAllReactions(realchan);
-    for(let channel in role.channels) {
+    if(debug) {
+        mychan = "513321055645859855";
+        myguild = Guilds.values().next().value;
+        realchan = myguild.channels.get(mychan);
+        mychan = myguild.channels.get(mychan);
+        role.channels.set("whatveve", mychan);
+    }
+    for (let channel of role.channels.values()) {
         channel.fetchMessages().then(
-            value =>  {
+            value => {
                 Log.LogSuccess("fetch messages", channel);
-                var reactors = getAllReactors(value);
-                for(let reactor in reactors) {
+                for(let message of value.values()) {
+                    var reactions  = message.reactions;
+                    for(let reaction of reactions.values()) {
+                        if(reactionEquals(reaction.emoji,role.reaction)) {
+                            user = message.member.addRole(getRoleFromGuild(role.name,channel.guild));
+                        }
+                    }
+                }/*
+                for (let reactor in reactors) {
                     roleId = getRoleFromGuild(role.name, channel.guild).id;
                     guild.members.get(reactor.id).addRole(roleId);
-                }
-            }, 
+                }*/
+            },
             reason => LogFail("fetch messages", reason));
     }
 }
@@ -218,8 +242,8 @@ function rolesEqual(first, second) {
 
 function AssignUndefined(destination, source) {
     var toreturn = new Object();
-    for(let property of Object.keys(source)) {
-        if(!destination.hasOwnProperty(property)) {
+    for (let property of Object.keys(source)) {
+        if (!destination.hasOwnProperty(property)) {
             toreturn[property] = source[property];
         } else {
             toreturn[property] = destination[property];

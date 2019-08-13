@@ -9,10 +9,10 @@ exports.write = function(message) {
 
 exports.LogSuccess = function(operation, value) {
     var loggingKey;
-    if(value.hasOwnProperty(name)) {
+    if(value.name !== undefined) {
         loggingKey = value.name;
     }
-    else if(value.hasOwnProperty(id)) {
+    else if(value.id !== undefined) {
         loggingKey = value.id;
     } else {
         loggingKey = value;
