@@ -42,6 +42,7 @@ function onLogin(value){
 	RoleParser.loadRoles(client);
 	//Infinite loop, required for the file listener
 	setInterval(() => {
+		//sendHeartBeat(); //TODO:
 	}, 1000)
 }
 

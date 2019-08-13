@@ -1,4 +1,5 @@
 require('./constants.js');
+const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
 const EqualityAmount = 0.5;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
@@ -9,6 +10,7 @@ const DefaultRole = {
     reaction: null, //moderator assigned or initial is true
     channels: [], //moderator assigned or initial is true
     initial: false,//a role everyone gets initially
+    permissions: [],
     roles: {}
 };
 
@@ -80,8 +82,6 @@ exports.loadRoles = function (CurrentClient) {
     for (let role of Object.entries(defaultedRoles.roles)) {
         setRoles(defaultedRoles, role);
     }
-
-    Roles;
 }
 
 function populateGuildSets() {
@@ -100,6 +100,11 @@ function setRoles(parentRole, currentRole) {
     var defaultedRole = AssignUndefined(currentRole[1], parentRole);
     defaultedRole.position = position++;
     defaultedRole.roles = currentRole[1].roles;
+    defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
+    Roles.set(roleName, defaultedRole);
+    if (defaultedRole.initial) {
+        InitialRoles.set(roleName, defaultedRole);
+    }
 
     //find all the roles in the json structure
     if (defaultedRole.roles !== undefined) {
@@ -114,22 +119,22 @@ function setRoles(parentRole, currentRole) {
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
-            guild.createRole(mappedRole);
+            guild.createRole(mappedRole).then(
+                value => Log.LogSuccess("create role", value), 
+                reason => LogFail("create role", reason));
         }
         else {
             if (existingRole.name === "@everyone") {
                 mappedRole.name = "@everyone"; // do not change this name
             }
             if (!rolesEqual(existingRole, mappedRole)) { //save some time and skip this if they're equal
-                existingRole.edit(mappedRole);
+                existingRole.edit(mappedRole).then(
+                    value => Log.LogSuccess("edit role", value), 
+                    reason => LogFail("edit role", reason));
             }
         }
     }
-    defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
-    Roles.set(roleName, defaultedRole);
-    if (defaultedRole.initial) {
-        InitialRoles.set(roleName, defaultedRole);
-    }
+    processReactions(defaultedRole);
 }
 
 function addRoleChannel(roleChannels) {
@@ -151,8 +156,8 @@ function mapRole(role, roleName) {
     return {
         name: roleName,
         color: role.color,
-        hoist: false
-        //permissions: 0 //for now
+        hoist: false,
+        permissions: role.permissions
     };
 }
 
@@ -160,12 +165,37 @@ function checkIfRoleExists(roleName, guild) {
     a = GuildSets.get(guild.name)
     var results = a.get(roleName);
     if (results !== null && results.length > 0) {
-        result = results[0];
-        if (result[0] > EqualityAmount) {
-            return getRoleFromGuild(result[1], guild);
+        for(i = 0 ; i < results.length ; i++) {
+            result = results[i];
+            if(Roles.has(result[1]) && result[0] < 1) 
+                continue;
+            if (result[0] > EqualityAmount) {
+                return getRoleFromGuild(result[1], guild);
+            }
         }
     }
     return null;
+}
+
+function processReactions(role) {
+
+    mychan = "513321055645859855";
+    myguild = Guilds.values().next().value;
+    channels = myguild.channels;
+    realchan = myguild.channels.get(mychan);
+    getAllReactions(realchan);
+    for(let channel in role.channels) {
+        channel.fetchMessages().then(
+            value =>  {
+                Log.LogSuccess("fetch messages", channel);
+                var reactors = getAllReactors(value);
+                for(let reactor in reactors) {
+                    roleId = getRoleFromGuild(role.name, channel.guild).id;
+                    guild.members.get(reactor.id).addRole(roleId);
+                }
+            }, 
+            reason => LogFail("fetch messages", reason));
+    }
 }
 
 function getRoleFromGuild(roleName, guild) {
