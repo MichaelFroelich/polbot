@@ -105,6 +105,7 @@ function setRoles(parentRole, currentRole) {
     var defaultedRole = AssignUndefined(currentRole[1], parentRole);
     defaultedRole.position = position++;
     defaultedRole.roles = currentRole[1].roles;
+    defaultedRole.name = roleName;
     defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
     Roles.set(roleName, defaultedRole);
     if (defaultedRole.initial) {
@@ -206,12 +207,22 @@ function processReactions(role) {
                     var reactions  = message.reactions;
                     for(let reaction of reactions.values()) {
                         if(reactionEquals(reaction.emoji,role.reaction)) {
-                            user = message.member.addRole(getRoleFromGuild(role.name,channel.guild));
+                            reaction.fetchUsers().then(
+                                value =>  giveUsersRole(value, reaction, role),
+                                reason => LogFail("fetch reacting users", reason));
                         }
                     }
                 }
             },
             reason => LogFail("fetch messages", reason));
+    }
+}
+
+function giveUsersRole(users, reaction, role){
+    var guild = reaction.message.guild;
+    for(let user of users.keys()) {
+        roleId = getRoleFromGuild(role.name, guild).id;
+        guild.members.get(user.id).addRole(roleId);
     }
 }
 
