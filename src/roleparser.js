@@ -222,7 +222,8 @@ function giveUsersRole(users, reaction, role){
     var guild = reaction.message.guild;
     for(let user of users.keys()) {
         roleId = getRoleFromGuild(role.name, guild).id;
-        guild.members.get(user.id).addRole(roleId);
+        memberme = guild.members.get(user);
+        guild.members.get(user).addRole(roleId);
     }
 }
 

@@ -89,6 +89,7 @@
                     "color": "GREEN"
                 },
                 "Religious": {
+                    "reaction": null,
                     "exclusive": false,
                     "persistent": false,
                     "roles": {
