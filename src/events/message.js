@@ -1,3 +1,7 @@
+/**
+ * Handles messages, for bot commands and maybe for AI
+ */
+
 require('./../constants.js');
 const active = new Map();
 const talkedRecently = new Set();
@@ -24,7 +28,7 @@ module.exports = (client, message) => {
     if (!cmd) return;
 
     if (talkedRecently.has(message.author.id)) {
-        message.channel.send("So fast! Wait a moment please!");
+        message.channel.send("Hang on, I'm just a little slow. I'll get to you in a moment.");
     } else {
 
         // Run the command

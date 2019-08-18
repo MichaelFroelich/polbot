@@ -1,6 +1,6 @@
 {
     "exclusive": true,
-    "channels": [590219681458159647],
+    "channels": ["513321055645859855"],
     "roles": {
         "Unverified": {
             "color": 0,
@@ -8,7 +8,7 @@
         },
         "Verified": {
             "color": 0,
-            "channels": [586656840939601930],
+            "channels": ["513321055645859855"],
             "reaction": "🍆",
             "persistent": true,
             "roles": {

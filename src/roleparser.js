@@ -8,7 +8,7 @@ const DefaultRole = {
     exclusive: false,
     persistent: false,
     color: 0,
-    reaction: null, //moderator assigned or initial is true
+    reaction: "this would never be a valid reaction", //moderator assigned or initial is true
     channels: [], //moderator assigned or initial is true
     initial: false,//a role everyone gets initially
     permissions: [],
@@ -33,14 +33,11 @@ exports.guildMemberAdd = function (member) {
 exports.setRole = function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
-    for (let RoleChannels of Roles.values()) {
-        if (RoleChannels.has(id)) {
-            for (let role of Roles.entries()) {
-                if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
-                    roleId = getRoleFromGuild(role.name, guild).id;
-                    guild.members.get(user.id).addRole(roleId);
-                }
-            }
+    for (let role of Roles.values()) {
+        if (role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
+            var realrole = getRoleFromGuild(role.name, guild);
+            var roleid = realrole.id;
+            guild.members.get(user.id).addRole(roleid);
         }
     }
 }
@@ -48,13 +45,20 @@ exports.setRole = function (reaction, user) {
 exports.removeRole = function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
-    for (let RoleChannels of Roles.values()) {
-        if (RoleChannels.has(id)) {
-            for (let role of Roles.entries()) {
-                if (role.channels.includes(id) && reactionEquals(reaction.emoji, role.reaction)) {
-                    roleId = getRoleFromGuild(role.name, guild).id;
-                    guild.members.get(user.id).removeRole(roleId);
+    for (let role of Roles.values()) {
+        if(role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
+            var realrole = getRoleFromGuild(role.name, guild);
+            var roleid = realrole.id;
+            var userid = null;
+            if(user === null)  {
+                for (let member of guild.members.values()) {
+                    if(member.roles.has(roleid)) {
+                        member.removeRole(roleid);
+                    }
                 }
+            } else {
+                userid = user.id;
+                guild.members.get(userid).removeRole(roleid);
             }
         }
     }
@@ -65,7 +69,7 @@ function reactionEquals(discordReaction, ourReaction) {
     if (discordReaction.identifier == ourReaction ||
         discordReaction.id == ourReaction ||
         discordReaction.name == ourReaction ||
-        discordReaction.identifier.endsWith(unicode) ||
+        ourReaction.endsWith(unicode) ||
         discordReaction == ourReaction) {
         return true;
     }
@@ -126,7 +130,7 @@ function setRoles(parentRole, currentRole) {
 
     //finished finding all the roles, now we add them
     var mappedRole = mapRole(defaultedRole, roleName);
-    defaultedRole.channels = addRoleChannel(defaultedRole.channels);
+    defaultedRole.channels  = addRoleChannel(defaultedRole.channels);
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
@@ -153,11 +157,9 @@ function addRoleChannel(roleChannels) {
     var channels = new Map();
     for (let roleChannel of roleChannels) {
         for (let guild of Guilds.values()) {
-            for (let channel of guild.channels.entries()) {
-                if (channelsEqual(channel, roleChannel)) {
-                    channels.set(channel[0], channel[1]);
-                }
-            }
+            realChannel = guild.channels.get(roleChannel);
+            if(realChannel)
+                channels.set(realChannel.id, realChannel);
         }
     }
     return channels;
@@ -199,13 +201,6 @@ function checkIfRoleExists(roleName, guild) {
 }
 
 function processReactions(role) {
-    if(debug) {
-        mychan = "513321055645859855";
-        myguild = Guilds.values().next().value;
-        realchan = myguild.channels.get(mychan);
-        mychan = myguild.channels.get(mychan);
-        role.channels.set("whatveve", mychan);
-    }
     for (let channel of role.channels.values()) {
         channel.fetchMessages().then(
             value => {
