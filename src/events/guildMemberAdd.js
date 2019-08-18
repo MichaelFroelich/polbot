@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
-/*
-module.exports = (client, member) =>{
+
+module.exports = (client, member) =>{/*
 	// Send the message to a designated channel on a server:
 	const channel = member.guild.channels.find('name', 'general');
 	
@@ -16,5 +16,5 @@ module.exports = (client, member) =>{
 		.addField("Here comes a new challenger!",`A new member has joined to our server ${member}`)
 		.addField("Where should i start ?","You must check the faq-rules channel, which is above all other channels.");
 
-	channel.send(serverembed);
-}*/
+	channel.send(serverembed);*/
+}

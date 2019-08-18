@@ -1,7 +1,7 @@
 require('./constants.js');
 const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
-const Discord = require('discord.js');
+const PolUtil = require('./util.js');
 const EqualityAmount = 0.5;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
 const DefaultRole = {
@@ -252,7 +252,9 @@ function getRoleFromGuild(roleName, guild) {
 
 //Todo: remember to add any new fields here or do reflection
 function rolesEqual(first, second) {
-    if (first.name === second.name && first.color === second.color) {
+    var firstcolor = PolUtil.resolveColor(first.color);
+    var secondcolor = PolUtil.resolveColor(second.color);
+    if (first.name === second.name && firstcolor === secondcolor) {
         return true;
     }
     else {
