@@ -1,6 +1,7 @@
 require('./constants.js');
 const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
+const Discord = require('discord.js');
 const EqualityAmount = 0.5;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
 const DefaultRole = {
@@ -72,6 +73,10 @@ function reactionEquals(discordReaction, ourReaction) {
         return false
 }
 
+exports.refreshRoles = function () {
+
+}
+
 /**
  * @param {Client} CurrentClient
  */
@@ -127,7 +132,7 @@ function setRoles(parentRole, currentRole) {
         if (existingRole == null) {
             guild.createRole(mappedRole).then(
                 value => Log.LogSuccess("create role", value),
-                reason => LogFail("create role", reason));
+                reason => Log.LogFail("create role", reason));
         }
         else {
             if (existingRole.name === "@everyone") {
@@ -136,7 +141,7 @@ function setRoles(parentRole, currentRole) {
             if (!rolesEqual(existingRole, mappedRole)) { //save some time and skip this if they're equal
                 existingRole.edit(mappedRole).then(
                     value => Log.LogSuccess("edit role", value),
-                    reason => LogFail("edit role", reason));
+                    reason => Log.LogFail("edit role", reason));
             }
         }
     }
@@ -167,9 +172,11 @@ function channelsEqual(discordsChannel, ourChannel) {
 }
 
 function mapRole(role, roleName) {
+    var color = role.color;
+    //color = Discord.Util.resolveColor(role.color);
     return {
         name: roleName,
-        color: role.color,
+        color: color,
         hoist: false,
         permissions: role.permissions
     };
@@ -208,22 +215,35 @@ function processReactions(role) {
                     for(let reaction of reactions.values()) {
                         if(reactionEquals(reaction.emoji,role.reaction)) {
                             reaction.fetchUsers().then(
-                                value =>  giveUsersRole(value, reaction, role),
-                                reason => LogFail("fetch reacting users", reason));
+                                value =>  {
+                                    giveUsersRole(value, reaction, role);
+                                    cleanUsersRole(value, reaction, role);
+                                },
+                                reason => Log.LogFail("fetch reacting users", reason));
                         }
                     }
                 }
             },
-            reason => LogFail("fetch messages", reason));
+            reason => Log.LogFail("fetch messages", reason));
     }
 }
 
 function giveUsersRole(users, reaction, role){
     var guild = reaction.message.guild;
+    roleId = getRoleFromGuild(role.name, guild).id;
     for(let user of users.keys()) {
-        roleId = getRoleFromGuild(role.name, guild).id;
-        memberme = guild.members.get(user);
         guild.members.get(user).addRole(roleId);
+    }
+}
+
+function cleanUsersRole(users, reaction, role){
+    var guild = reaction.message.guild;
+    var role = getRoleFromGuild(role.name, guild);
+    var members = role.members;
+    for(let user of role.members.values()) {
+        if(!users.has(user.id)) {
+            user.removeRole(role.id);
+        }
     }
 }
 
@@ -241,7 +261,7 @@ function rolesEqual(first, second) {
         return true;
     }
     else {
-        return false
+        return false;
     }
 }
 
