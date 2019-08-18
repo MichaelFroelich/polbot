@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-
+/*
 module.exports = (client, member) =>{
 	// Send the message to a designated channel on a server:
 	const channel = member.guild.channels.find('name', 'general');
@@ -17,4 +17,4 @@ module.exports = (client, member) =>{
 		.addField("Where should i start ?","You must check the faq-rules channel, which is above all other channels.");
 
 	channel.send(serverembed);
-}
+}*/
