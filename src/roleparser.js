@@ -235,7 +235,7 @@ function processReactions(role) {
                             currentReactingUsers = new Map();
                             reaction.fetchUsers().then(
                                 value =>  {
-                                    getAllReactingMembers(value, reaction, 0)
+                                    getAllReactingMembers(role, value, reaction, 0)
                                 },
                                 reason => Log.LogFail("fetch reacting users", reason));
                         }
@@ -246,11 +246,11 @@ function processReactions(role) {
     }
 }
 
-function getAllReactingMembers(value, reaction, oldsize) {
+function getAllReactingMembers(role, value, reaction, oldsize) {
     currentsize = reaction.users.size;
     if(currentsize >= reaction.count) { //got all the users, it's go time
-        giveUsersRole(value, reaction, role);
-        cleanUsersRole(value, reaction, role);
+        giveUsersRole(reaction, role);
+        //cleanUsersRole(reaction, role);
     }
     else if(currentsize > oldsize) {
         //set bounds
@@ -258,26 +258,28 @@ function getAllReactingMembers(value, reaction, oldsize) {
 
         //get lower
         reaction.fetchUsers(FetchSize, {before: middlestring}).then(
-            value => getAllReactingMembers(value, reaction, currentsize),
+            value => getAllReactingMembers(role, value, reaction, currentsize),
             reason => Log.LogFail("lower bounds guild caching", reason));
 
         //get upper
         reaction.fetchUsers(FetchSize, {after: middlestring }).then(
-            value => getAllReactingMembers(value, reaction, currentsize),
+            value => getAllReactingMembers(role, value, reaction, currentsize),
             reason => Log.LogFail("upper bounds guild caching", reason));
     } 
 
 }
 
-function giveUsersRole(users, reaction, role){
+function giveUsersRole(reaction, role){
     var guild = reaction.message.guild;
+    var users = reaction.users;
     roleId = getRoleFromGuild(role.name, guild).id;
     for(let user of users.keys()) {
         member = guild.members.get(user);
-
-        member.addRole(roleId).then(
-            value => Log.LogSuccess("add role", value),
-            reason => Log.LogFail("add role", reason));
+        if(!member.roles.has(roleId) && guild.members.has(user)) {
+            member.addRole(roleId).then(
+                value => Log.LogSuccess("add role", value),
+                reason => Log.LogFail("add role", reason));
+        }
     }
 }
 
