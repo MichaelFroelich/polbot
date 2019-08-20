@@ -5,3 +5,4 @@ npm install enmap
 npm install ms
 npm install moment
 npm install fuzzyset.js
+npm install long

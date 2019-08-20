@@ -1,8 +1,10 @@
 require('./constants.js');
 const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
-const PolUtil = require('./util.js');
+const Util = require('./util.js');
+const Long = require('long');
 const EqualityAmount = 0.5;
+const FetchSize = 100;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
 const DefaultRole = {
     exclusive: false,
@@ -25,7 +27,9 @@ var InitialRoles;
 exports.guildMemberAdd = function (member) {
     if (!member.user.bot) {
         for (let role of InitialRoles.keys()) {
-            member.addRole(getRoleFromGuild(role, member.guild));
+            member.addRole(getRoleFromGuild(role, member.guild)).then(
+                value => Log.LogSuccess("add role", value),
+                reason => Log.LogFail("add role", reason));;
         }
     }
 }
@@ -37,7 +41,9 @@ exports.setRole = function (reaction, user) {
         if (role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
             var realrole = getRoleFromGuild(role.name, guild);
             var roleid = realrole.id;
-            guild.members.get(user.id).addRole(roleid);
+            guild.members.get(user.id).addRole(roleid).then(
+                value => Log.LogSuccess("add role", value),
+                reason => Log.LogFail("add role", reason));
         }
     }
 }
@@ -53,12 +59,16 @@ exports.removeRole = function (reaction, user) {
             if(user === null)  {
                 for (let member of guild.members.values()) {
                     if(member.roles.has(roleid)) {
-                        member.removeRole(roleid);
+                        member.removeRole(roleid).then(
+                            value => Log.LogSuccess("remove role", value),
+                            reason => Log.LogFail("remove role", reason));
                     }
                 }
             } else {
                 userid = user.id;
-                guild.members.get(userid).removeRole(roleid);
+                guild.members.get(userid).removeRole(roleid).then(
+                    value => Log.LogSuccess("remove role", value),
+                    reason => Log.LogFail("remove role", reason));
             }
         }
     }
@@ -84,10 +94,21 @@ exports.refreshRoles = function () {
 /**
  * @param {Client} CurrentClient
  */
-exports.loadRoles = function (CurrentClient) {
+exports.construct = function (CurrentClient) {
     position = StartingPosition;
     Client = CurrentClient;
     Guilds = Client.guilds;
+    for (let guild of Guilds.values()) {
+        if(guild.memberCount > FetchSize)
+            guild.fetchMembers('', guild.memberCount).then(
+                value => Log.LogSuccess("fetch members", value),
+                reason => Log.LogFail("fetch members", reason));
+    }
+    loadRoals();
+}
+
+
+function loadRoals() {
     var roles = require(RolesFile);
     Roles = new Map();
     InitialRoles = new Map();
@@ -200,6 +221,8 @@ function checkIfRoleExists(roleName, guild) {
     return null;
 }
 
+var currentReactingUsers = new Map();;
+
 function processReactions(role) {
     for (let channel of role.channels.values()) {
         channel.fetchMessages().then(
@@ -209,10 +232,10 @@ function processReactions(role) {
                     var reactions  = message.reactions;
                     for(let reaction of reactions.values()) {
                         if(reactionEquals(reaction.emoji,role.reaction)) {
+                            currentReactingUsers = new Map();
                             reaction.fetchUsers().then(
                                 value =>  {
-                                    giveUsersRole(value, reaction, role);
-                                    cleanUsersRole(value, reaction, role);
+                                    getAllReactingMembers(value, reaction, 0)
                                 },
                                 reason => Log.LogFail("fetch reacting users", reason));
                         }
@@ -223,11 +246,38 @@ function processReactions(role) {
     }
 }
 
+function getAllReactingMembers(value, reaction, oldsize) {
+    currentsize = reaction.users.size;
+    if(currentsize >= reaction.count) { //got all the users, it's go time
+        giveUsersRole(value, reaction, role);
+        cleanUsersRole(value, reaction, role);
+    }
+    else if(currentsize > oldsize) {
+        //set bounds
+        var middlestring = Util.getMedian(value);
+
+        //get lower
+        reaction.fetchUsers(FetchSize, {before: middlestring}).then(
+            value => getAllReactingMembers(value, reaction, currentsize),
+            reason => Log.LogFail("lower bounds guild caching", reason));
+
+        //get upper
+        reaction.fetchUsers(FetchSize, {after: middlestring }).then(
+            value => getAllReactingMembers(value, reaction, currentsize),
+            reason => Log.LogFail("upper bounds guild caching", reason));
+    } 
+
+}
+
 function giveUsersRole(users, reaction, role){
     var guild = reaction.message.guild;
     roleId = getRoleFromGuild(role.name, guild).id;
     for(let user of users.keys()) {
-        guild.members.get(user).addRole(roleId);
+        member = guild.members.get(user);
+
+        member.addRole(roleId).then(
+            value => Log.LogSuccess("add role", value),
+            reason => Log.LogFail("add role", reason));
     }
 }
 
@@ -237,7 +287,9 @@ function cleanUsersRole(users, reaction, role){
     var members = role.members;
     for(let user of role.members.values()) {
         if(!users.has(user.id)) {
-            user.removeRole(role.id);
+            user.removeRole(role.id).then(
+                value => Log.LogSuccess("remove role", value),
+                reason => Log.LogFail("remove role", reason));
         }
     }
 }
@@ -252,8 +304,8 @@ function getRoleFromGuild(roleName, guild) {
 
 //Todo: remember to add any new fields here or do reflection
 function rolesEqual(first, second) {
-    var firstcolor = PolUtil.resolveColor(first.color);
-    var secondcolor = PolUtil.resolveColor(second.color);
+    var firstcolor = Util.resolveColor(first.color);
+    var secondcolor = Util.resolveColor(second.color);
     if (first.name === second.name && firstcolor === secondcolor) {
         return true;
     }

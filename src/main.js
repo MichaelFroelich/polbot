@@ -85,7 +85,7 @@ client.on('raw', packet => {
 
 client.on("guildMemberAdd", (member) => RoleParser.guildMemberAdd(member));
 
-fs.watchFile(RolesFile, (curr, prev) => RoleParser.loadRoles(client));
+fs.watchFile(RolesFile, (curr, prev) => RoleParser.construct(client));
 
 client.login(Token).then(value => onLogin(value), reason => {
 	Log.write('failed to login because\t' + reason.message);
@@ -101,12 +101,11 @@ function onLogin(value) {
 			return console.log(err);
 	});
 	Log.write('Started successfuly');
-	RoleParser.loadRoles(client);
+	RoleParser.construct(client);
 	//Infinite loop, required for the file listener
 	setInterval(() => {
 		//sendHeartBeat(); //TODO:
 		RoleParser.refreshRoles(); //make sure no roles have been missed
-		Log.write("ping");
 	}, 10000)
 }
 

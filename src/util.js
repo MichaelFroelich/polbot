@@ -1,3 +1,5 @@
+const Long = require('long');
+
 const Colors = {
     DEFAULT: 0x000000,
     WHITE: 0xFFFFFF,
@@ -28,6 +30,8 @@ const Colors = {
     DARK_BUT_NOT_BLACK: 0x2C2F33,
     NOT_QUITE_BLACK: 0x23272A,
 };
+
+exports.LongMax = "18446744073709551615";
   
 exports.resolveColor = function (color) {
     if (typeof color === 'string') {
@@ -45,4 +49,42 @@ exports.resolveColor = function (color) {
     }
 
     return color;
+}
+
+exports.getMedian = function(map) {
+    var toreturn = null;
+    let keys = Array.from(map.keys()).sort(function(a, b){
+        a = Long.fromString(a);
+        b = Long.fromString(b);
+        if(a.lessThan(b)) {
+            return -1;
+        } 
+        else if (a.greaterThan(b)) {
+            return 1;
+        } 
+        else {
+            return 0;
+        }
+    });
+    return keys[keys.length/2];
+}
+
+exports.getMax = function(map) {
+    var toreturn = null;
+    for (let key of map) {
+        if(toreturn === null || Long.fromString(key[0]).greaterThan(Long.fromString(toreturn[0]))) {
+            toreturn = key;
+        }
+    }
+    return toreturn;
+}
+
+exports.getMin = function(map) {
+    var toreturn = null;
+    for (let key of map) {
+        if(toreturn === null || Long.fromString(key[0]).lessThan(Long.fromString(toreturn[0]))) {
+            toreturn = key;
+        }
+    }
+    return toreturn;
 }
