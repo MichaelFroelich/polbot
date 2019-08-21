@@ -275,7 +275,7 @@ function giveUsersRole(reaction, role){
     roleId = getRoleFromGuild(role.name, guild).id;
     for(let user of users.keys()) {
         member = guild.members.get(user);
-        if(!member.roles.has(roleId) && guild.members.has(user)) {
+        if(member !== undefined && !member.roles.has(roleId)) {
             member.addRole(roleId).then(
                 value => Log.LogSuccess("add role", value),
                 reason => Log.LogFail("add role", reason));
