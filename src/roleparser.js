@@ -2,7 +2,6 @@ require('./constants.js');
 const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
 const Util = require('./util.js');
-const Long = require('long');
 const EqualityAmount = 0.5;
 const FetchSize = 100;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
@@ -26,10 +25,8 @@ var InitialRoles;
 
 exports.guildMemberAdd = function (member) {
     if (!member.user.bot) {
-        for (let role of InitialRoles.keys()) {
-            member.addRole(getRoleFromGuild(role, member.guild)).then(
-                value => Log.LogSuccess("add role", value),
-                reason => Log.LogFail("add role", reason));;
+        for (let role of InitialRoles.values()) {
+            addRole(role, member);
         }
     }
 }
@@ -39,11 +36,7 @@ exports.setRole = function (reaction, user) {
     var guild = reaction.message.guild;
     for (let role of Roles.values()) {
         if (role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
-            var realrole = getRoleFromGuild(role.name, guild);
-            var roleid = realrole.id;
-            guild.members.get(user.id).addRole(roleid).then(
-                value => Log.LogSuccess("add role", value),
-                reason => Log.LogFail("add role", reason));
+            addRole(role, guild.members.get(user.id));
         }
     }
 }
@@ -52,13 +45,16 @@ exports.removeRole = function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
     for (let role of Roles.values()) {
-        if(role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
+        if (role.channels.has(id) && reactionEquals(reaction.emoji, role.reaction)) {
+            if (role.persistent) {
+                return; //do nothing, this role can't be removed
+            }
             var realrole = getRoleFromGuild(role.name, guild);
             var roleid = realrole.id;
             var userid = null;
-            if(user === null)  {
+            if (user === null) {
                 for (let member of guild.members.values()) {
-                    if(member.roles.has(roleid)) {
+                    if (member.roles.has(roleid)) {
                         member.removeRole(roleid).then(
                             value => Log.LogSuccess("remove role", value),
                             reason => Log.LogFail("remove role", reason));
@@ -75,16 +71,9 @@ exports.removeRole = function (reaction, user) {
 }
 
 function reactionEquals(discordReaction, ourReaction) {
-    var unicode = discordReaction.identifier.replace(new RegExp('%', 'g'),'');
-    if (discordReaction.identifier == ourReaction ||
-        discordReaction.id == ourReaction ||
-        discordReaction.name == ourReaction ||
-        ourReaction.endsWith(unicode) ||
-        discordReaction == ourReaction) {
+    if(Util.resolveReaction(discordReaction) === Util.resolveReaction(ourReaction))
         return true;
-    }
-    else
-        return false
+    else return false;
 }
 
 exports.refreshRoles = function () {
@@ -99,7 +88,7 @@ exports.construct = function (CurrentClient) {
     Client = CurrentClient;
     Guilds = Client.guilds;
     for (let guild of Guilds.values()) {
-        if(guild.memberCount > FetchSize)
+        if (guild.memberCount > FetchSize)
             guild.fetchMembers('', guild.memberCount).then(
                 value => Log.LogSuccess("fetch members", value),
                 reason => Log.LogFail("fetch members", reason));
@@ -115,7 +104,7 @@ function loadRoals() {
     populateGuildSets(Client.guilds);
     var defaultedRoles = AssignUndefined(roles, DefaultRole); //The root of the roles file forms the current default
     for (let role of Object.entries(defaultedRoles.roles)) {
-        setRoles(defaultedRoles, role);
+        createRoles(defaultedRoles, role);
     }
 }
 
@@ -130,13 +119,14 @@ function populateGuildSets() {
     }
 }
 
-function setRoles(parentRole, currentRole) {
+function createRoles(parentRole, currentRole) {
     var roleName = currentRole[0];
     var defaultedRole = AssignUndefined(currentRole[1], parentRole);
     defaultedRole.position = position++;
     defaultedRole.roles = currentRole[1].roles;
     defaultedRole.name = roleName;
     defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
+    defaultedRole.parent.roles[defaultedRole.name] = defaultedRole;
     Roles.set(roleName, defaultedRole);
     if (defaultedRole.initial) {
         InitialRoles.set(roleName, defaultedRole);
@@ -145,13 +135,13 @@ function setRoles(parentRole, currentRole) {
     //find all the roles in the json structure
     if (defaultedRole.roles !== undefined) {
         for (let role of Object.entries(defaultedRole.roles)) {
-            setRoles(defaultedRole, role);
+            createRoles(defaultedRole, role);
         }
     }
 
     //finished finding all the roles, now we add them
     var mappedRole = mapRole(defaultedRole, roleName);
-    defaultedRole.channels  = addRoleChannel(defaultedRole.channels);
+    defaultedRole.channels = addRoleChannel(defaultedRole.channels);
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
@@ -179,7 +169,7 @@ function addRoleChannel(roleChannels) {
     for (let roleChannel of roleChannels) {
         for (let guild of Guilds.values()) {
             realChannel = guild.channels.get(roleChannel);
-            if(realChannel)
+            if (realChannel)
                 channels.set(realChannel.id, realChannel);
         }
     }
@@ -187,7 +177,7 @@ function addRoleChannel(roleChannels) {
 }
 
 function channelsEqual(discordsChannel, ourChannel) {
-    if(ourChannel == discordsChannel.id || ourChannel == discordsChannel.name) {
+    if (ourChannel == discordsChannel.id || ourChannel == discordsChannel.name) {
         return true;
     } else {
         return false;
@@ -221,20 +211,18 @@ function checkIfRoleExists(roleName, guild) {
     return null;
 }
 
-var currentReactingUsers = new Map();;
-
 function processReactions(role) {
     for (let channel of role.channels.values()) {
         channel.fetchMessages().then(
             value => {
                 Log.LogSuccess("fetch messages", channel);
-                for(let message of value.values()) {
-                    var reactions  = message.reactions;
-                    for(let reaction of reactions.values()) {
-                        if(reactionEquals(reaction.emoji,role.reaction)) {
+                for (let message of value.values()) {
+                    var reactions = message.reactions;
+                    for (let reaction of reactions.values()) {
+                        if (reactionEquals(reaction.emoji, role.reaction)) {
                             currentReactingUsers = new Map();
                             reaction.fetchUsers().then(
-                                value =>  {
+                                value => {
                                     getAllReactingMembers(role, value, reaction, 0)
                                 },
                                 reason => Log.LogFail("fetch reacting users", reason));
@@ -248,47 +236,45 @@ function processReactions(role) {
 
 function getAllReactingMembers(role, value, reaction, oldsize) {
     currentsize = reaction.users.size;
-    if(currentsize >= reaction.count) { //got all the users, it's go time
+    if (currentsize >= reaction.count) { //got all the users, it's go time
         giveUsersRole(reaction, role);
         //cleanUsersRole(reaction, role);
     }
-    else if(currentsize > oldsize) {
+    else if (currentsize > oldsize) {
         //set bounds
         var middlestring = Util.getMedian(value);
 
         //get lower
-        reaction.fetchUsers(FetchSize, {before: middlestring}).then(
+        reaction.fetchUsers(FetchSize, { before: middlestring }).then(
             value => getAllReactingMembers(role, value, reaction, currentsize),
             reason => Log.LogFail("lower bounds guild caching", reason));
 
         //get upper
-        reaction.fetchUsers(FetchSize, {after: middlestring }).then(
+        reaction.fetchUsers(FetchSize, { after: middlestring }).then(
             value => getAllReactingMembers(role, value, reaction, currentsize),
             reason => Log.LogFail("upper bounds guild caching", reason));
-    } 
+    }
 
 }
 
-function giveUsersRole(reaction, role){
+function giveUsersRole(reaction, role) {
     var guild = reaction.message.guild;
     var users = reaction.users;
     roleId = getRoleFromGuild(role.name, guild).id;
-    for(let user of users.keys()) {
+    for (let user of users.keys()) {
         member = guild.members.get(user);
-        if(member !== undefined && !member.roles.has(roleId)) {
-            member.addRole(roleId).then(
-                value => Log.LogSuccess("add role", value),
-                reason => Log.LogFail("add role", reason));
+        if (member !== undefined && !member.roles.has(roleId)) {
+            addRole(role, member);
         }
     }
 }
 
-function cleanUsersRole(users, reaction, role){
+function cleanUsersRole(users, reaction, role) {
     var guild = reaction.message.guild;
     var role = getRoleFromGuild(role.name, guild);
     var members = role.members;
-    for(let user of role.members.values()) {
-        if(!users.has(user.id)) {
+    for (let user of role.members.values()) {
+        if (!users.has(user.id)) {
             user.removeRole(role.id).then(
                 value => Log.LogSuccess("remove role", value),
                 reason => Log.LogFail("remove role", reason));
@@ -316,9 +302,48 @@ function rolesEqual(first, second) {
     }
 }
 
+function addRole(role, member) {
+    realrole = getRoleFromGuild(role.name, member.guild);
+    if(member.roles.has(realrole.id)) {
+        return;
+    }
+    
+    role.id = realrole.id;
+    var currentRoles = member.roles;
+    var toRemove = new Map();
+    getAllExclusiveRoles(role, toRemove);
+    for(let currentRole of currentRoles.values()) {
+        if(toRemove.has(currentRole.name)) {
+            currentRole.id = getRoleFromGuild(currentRole.name, member.guild).id;
+            currentRoles.delete(currentRole.id);
+        }
+    }
+
+    currentRoles.set(role.id, realrole); //finally, add the role we actually want
+    member.setRoles(currentRoles).then(
+        value => Log.LogSuccess("add role", value),
+        reason => Log.LogFail("add role", reason));;
+}
+
+function getAllExclusiveRoles(role, roles) {
+    if (role.exclusive) {
+        for (let sibling of Object.values(role.parent.roles)) {
+            if(sibling.exclusive && !sibling.persistent) {
+                roles.set(sibling.name, sibling);
+            }
+        }
+    }
+    if(role.parent.parent !== undefined && role.parent.exclusive) {
+        getAllExclusiveRoles(role.parent, roles);
+    }
+}
+
 function AssignUndefined(destination, source) {
     var toreturn = new Object();
     for (let property of Object.keys(source)) {
+        if(property === "persistent") {
+            continue; //only one role per server is likely to be persistent
+        }
         if (!destination.hasOwnProperty(property)) {
             toreturn[property] = source[property];
         } else {

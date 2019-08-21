@@ -9,7 +9,49 @@
             "color": "49bb8f",
             "reaction": "✅",
             "channels": ["590219681458159647"],
-            "persistent": true
+            "persistent": true,
+            "roles": {
+                "Anarchist": {
+                    "channels": ["586656840939601930"],
+                    "color": "BLACK",
+                    "reaction": "1️⃣"
+                },
+                "Communist": {
+                    "channels": ["586656840939601930"],
+                    "color": "RED",
+                    "reaction": "2️⃣"
+                },
+                "Fascist": {
+                    "channels": ["586656840939601930"],
+                    "color": "9c6e18",
+                    "reaction": "3️⃣"
+                },
+                "Corporatist": {
+                    "channels": ["586656840939601930"],
+                    "color": "GREY",
+                    "reaction": "4️⃣"
+                },
+                "Capitalist": {
+                    "channels": ["586656840939601930"],
+                    "color": "GOLD",
+                    "reaction": "5️⃣"
+                },
+                "Socialist": {
+                    "channels": ["586656840939601930"],
+                    "color": "ORANGE",
+                    "reaction": "6️⃣"
+                },
+                "Conservative": {
+                    "channels": ["586656840939601930"],
+                    "color": "BLUE",
+                    "reaction": "7️⃣"
+                },
+                "Centrist": {
+                    "channels": ["586656840939601930"],
+                    "color": "LUMINOUS_VIVID_PINK",
+                    "reaction": "8️⃣"
+                }
+            }
         }
     }
 }

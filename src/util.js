@@ -1,5 +1,6 @@
 const Long = require('long');
-
+const Emojis = require('./emojis.json')
+const HexRegex  = '^[a-fA-F0-9\-]+$';
 const Colors = {
     DEFAULT: 0x000000,
     WHITE: 0xFFFFFF,
@@ -32,7 +33,7 @@ const Colors = {
 };
 
 exports.LongMax = "18446744073709551615";
-  
+
 exports.resolveColor = function (color) {
     if (typeof color === 'string') {
         if (color === 'RANDOM') return Math.floor(Math.random() * (0xFFFFFF + 1));
@@ -51,40 +52,81 @@ exports.resolveColor = function (color) {
     return color;
 }
 
-exports.getMedian = function(map) {
+exports.getMedian = function (map) {
     var toreturn = null;
-    let keys = Array.from(map.keys()).sort(function(a, b){
+    let keys = Array.from(map.keys()).sort(function (a, b) {
         a = Long.fromString(a);
         b = Long.fromString(b);
-        if(a.lessThan(b)) {
+        if (a.lessThan(b)) {
             return -1;
-        } 
+        }
         else if (a.greaterThan(b)) {
             return 1;
-        } 
+        }
         else {
             return 0;
         }
     });
-    return keys[keys.length/2];
+    return keys[keys.length / 2];
 }
 
-exports.getMax = function(map) {
+exports.getMax = function (map) {
     var toreturn = null;
     for (let key of map) {
-        if(toreturn === null || Long.fromString(key[0]).greaterThan(Long.fromString(toreturn[0]))) {
+        if (toreturn === null || Long.fromString(key[0]).greaterThan(Long.fromString(toreturn[0]))) {
             toreturn = key;
         }
     }
     return toreturn;
 }
 
-exports.getMin = function(map) {
+exports.getMin = function (map) {
     var toreturn = null;
     for (let key of map) {
-        if(toreturn === null || Long.fromString(key[0]).lessThan(Long.fromString(toreturn[0]))) {
+        if (toreturn === null || Long.fromString(key[0]).lessThan(Long.fromString(toreturn[0]))) {
             toreturn = key;
         }
     }
     return toreturn;
+}
+
+exports.resolveReaction = function (reaction) {
+    if (reaction.name !== undefined || getUnicodeLength(reaction) === 1) {
+        return Emojis[getUnicode(reaction.toString())];
+    } else if (isHex(reaction)) {
+        return Emojis[reaction.toLowerCase()];
+    }
+    else
+        return reaction;
+}
+
+function isHex(h) {
+    var ami = h.match(new RegExp(HexRegex, 'g'));
+    return ami;
+}
+
+function getUnicode(char) {
+    const joiner = "\u{200D}";
+    const split = char.split(joiner);
+
+    var hexout = "";
+    for (const s of split) {
+        hexout += s.toString().codePointAt(0).toString(16) + "-";
+    }
+    return hexout.substring(0, hexout.length - 1);
+}
+
+function getUnicodeLength(str) {
+    const joiner = "\u{200D}";
+    const split = str.split(joiner);
+    let count = 0;
+
+    for (const s of split) {
+        //removing the variation selectors
+        const num = Array.from(s.split(/[\ufe00-\ufe0f]/).join("")).length;
+        count += num;
+    }
+
+    //assuming the joiners are used appropriately
+    return count / split.length;
 }
