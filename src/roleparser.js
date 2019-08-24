@@ -141,7 +141,7 @@ function createRoles(parentRole, currentRole) {
 
     //finished finding all the roles, now we add them
     var mappedRole = mapRole(defaultedRole, roleName);
-    defaultedRole.channels = addRoleChannel(defaultedRole.channels);
+    defaultedRole.channels = addRoleChannel(defaultedRole.parent.channels); //in json, the channel the role uses exists on the parent
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
@@ -341,10 +341,7 @@ function getAllExclusiveRoles(role, roles) {
 function AssignUndefined(destination, source) {
     var toreturn = new Object();
     for (let property of Object.keys(source)) {
-        if(property === "persistent") {
-            continue; //only one role per server is likely to be persistent
-        }
-        if (!destination.hasOwnProperty(property)) {
+        if (!destination.hasOwnProperty(property) && property !== "persistent") {
             toreturn[property] = source[property];
         } else {
             toreturn[property] = destination[property];

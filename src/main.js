@@ -68,7 +68,7 @@ client.on('messageReactionRemoveAll', (reaction) => RoleParser.removeRole(reacti
 client.on('raw', packet => {
 	if (!['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE', 'MESSAGE_REACTION_REMOVE_ALL'].includes(packet.t)) return;
 	const channel = client.channels.get(packet.d.channel_id);
-	//if (channel.messages.has(packet.d.message_id))	return; //message already cached
+	if (channel.messages.has(packet.d.message_id) || packet.t === 'MESSAGE_REACTION_REMOVE')	return; //message already cached
 	channel.fetchMessage(packet.d.message_id).then(message => {
 		const emoji = packet.d.emoji.id ? `${packet.d.emoji.name}:${packet.d.emoji.id}` : packet.d.emoji.name;
 		const reaction = message.reactions.get(emoji);

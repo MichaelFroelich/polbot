@@ -91,35 +91,50 @@ exports.getMin = function (map) {
 }
 
 exports.resolveReaction = function (reaction) {
-    if (reaction.name !== undefined || getUnicodeLength(reaction) === 1) {
-        return Emojis[getUnicode(reaction.toString())];
+    if (reaction.name !== undefined){
+        var emoji = Emojis[getUnicode(reaction.name.toString())];
+        return emoji;
+    } else if (getUnicodeLength(reaction.toString()) === 1) {
+        var emoji = Emojis[getUnicode(reaction.toString())]
+        return emoji;
     } else if (reaction.match(new RegExp(HexRegex, 'g'))) {
-        return Emojis[reaction.toLowerCase()];
+        var emoji = Emojis[reaction.toLowerCase()];
+        return emoji;
     }
     else
         return reaction;
 }
 
 function getUnicode(char) {
-    const joiner = "\u{200D}";
-    const split = char.split(joiner);
+    const split = char.split(/[\u200c|\u200d|\u034f|\u035d|\u20e3]/);
 
     var hexout = "";
     for (const s of split) {
-        hexout += s.toString().codePointAt(0).toString(16) + "-";
+        if(s.length === 0)
+            continue;
+        hexout += pad(s.toString().codePointAt(0).toString(16),4) + "-";
     }
     return hexout.substring(0, hexout.length - 1);
 }
 
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+  }
+
 function getUnicodeLength(str) {
-    const joiner = "\u{200D}";
-    const split = str.split(joiner);
+    const split = str.split(/[\u200c|\u200d|\u034f|\u035d|\u20e3]/);
     let count = 0;
 
     for (const s of split) {
-        //removing the variation selectors
-        const num = Array.from(s.split(/[\ufe00-\ufe0f]/).join("")).length;
-        count += num;
+        if(s.length === 0) {
+            count += 1;
+        } else {
+            //removing the variation selectors
+            const num = Array.from(s.split(/[\ufe00-\ufe0f]/).join("")).length;
+            count += num;
+        }
     }
 
     //assuming the joiners are used appropriately
