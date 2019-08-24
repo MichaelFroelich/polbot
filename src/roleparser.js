@@ -269,19 +269,6 @@ function giveUsersRole(reaction, role) {
     }
 }
 
-function cleanUsersRole(users, reaction, role) {
-    var guild = reaction.message.guild;
-    var role = getRoleFromGuild(role.name, guild);
-    var members = role.members;
-    for (let user of role.members.values()) {
-        if (!users.has(user.id)) {
-            user.removeRole(role.id).then(
-                value => Log.LogSuccess("remove role", value),
-                reason => Log.LogFail("remove role", reason));
-        }
-    }
-}
-
 function getRoleFromGuild(roleName, guild) {
     for (let role of guild.roles.values()) {
         if (role.name == roleName) {
@@ -315,7 +302,8 @@ function addRole(role, member) {
     for(let currentRole of currentRoles.values()) {
         if(toRemove.has(currentRole.name)) {
             currentRole.id = getRoleFromGuild(currentRole.name, member.guild).id;
-            currentRoles.delete(currentRole.id);
+            return;
+            //currentRoles.delete(currentRole.id);
         }
     }
 
