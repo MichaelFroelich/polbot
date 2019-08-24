@@ -93,16 +93,11 @@ exports.getMin = function (map) {
 exports.resolveReaction = function (reaction) {
     if (reaction.name !== undefined || getUnicodeLength(reaction) === 1) {
         return Emojis[getUnicode(reaction.toString())];
-    } else if (isHex(reaction)) {
+    } else if (reaction.match(new RegExp(HexRegex, 'g'))) {
         return Emojis[reaction.toLowerCase()];
     }
     else
         return reaction;
-}
-
-function isHex(h) {
-    var ami = h.match(new RegExp(HexRegex, 'g'));
-    return ami;
 }
 
 function getUnicode(char) {
