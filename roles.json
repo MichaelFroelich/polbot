@@ -41,11 +41,11 @@
                     "reaction": "7️⃣"
                 },
                 "Conservative": {
-                    "color": "BLURPLE",
+                    "color": "7851a9", 
                     "reaction": "8️⃣"
                 },
                 "Centrist": {
-                    "color": "LUMINOUS_VIVID_PINK",
+                    "color": "d0c1b1", 
                     "reaction": "9"
                 }
             }

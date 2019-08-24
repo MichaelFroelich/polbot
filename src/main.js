@@ -105,7 +105,7 @@ function onLogin(value) {
 	//Infinite loop, required for the file listener
 	setInterval(() => {
 		//sendHeartBeat(); //TODO:
-		RoleParser.refreshRoles(); //make sure no roles have been missed
+		//RoleParser.loadRoles(); //make sure no roles have been missed
 	}, 10000)
 }
 
