@@ -31,9 +31,12 @@ exports.run = (client, message, args) =>{
     uptime += `${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds`;
 
     let serverembed = new Discord.RichEmbed()
-        .setColor("#228B22")
-        .addField('Uptime', uptime);
+        .setColor("#9400D3")
+        .addField(`Library`,`Discord.js` , true)
+        .addField(`Servers`, `${client.guilds.size}`, true)
+        .addField(`Users`, `${client.users.size}`, true)
+        .setFooter(`Uptime: ${uptime}`);
 
-    message.channel.send(serverembed);
+    message.channel.send(serverembed);    
 
 }

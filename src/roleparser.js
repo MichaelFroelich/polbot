@@ -26,7 +26,7 @@ var InitialRoles;
 exports.guildMemberAdd = function (member) {
     if (!member.user.bot) {
         for (let role of InitialRoles.values()) {
-            addRole(role, member);
+            addRole(role, member, true);
         }
     }
 }
@@ -74,10 +74,6 @@ function reactionEquals(discordReaction, ourReaction) {
     if(Util.resolveReaction(discordReaction) === Util.resolveReaction(ourReaction))
         return true;
     else return false;
-}
-
-exports.refreshRoles = function () {
-
 }
 
 /**
@@ -174,14 +170,6 @@ function addRoleChannel(roleChannels) {
         }
     }
     return channels;
-}
-
-function channelsEqual(discordsChannel, ourChannel) {
-    if (ourChannel == discordsChannel.id || ourChannel == discordsChannel.name) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 function mapRole(role, roleName) {
@@ -289,10 +277,13 @@ function rolesEqual(first, second) {
     }
 }
 
-function addRole(role, member) {
+function addRole(role, member, override = false) {
     realrole = getRoleFromGuild(role.name, member.guild);
     if(member.roles.has(realrole.id)) {
         return;
+    }
+    if(role.persistent === true) {
+        override = true;
     }
     
     role.id = realrole.id;
@@ -302,8 +293,10 @@ function addRole(role, member) {
     for(let currentRole of currentRoles.values()) {
         if(toRemove.has(currentRole.name)) {
             currentRole.id = getRoleFromGuild(currentRole.name, member.guild).id;
-            return;
-            //currentRoles.delete(currentRole.id);
+            if(override === true) 
+                currentRoles.delete(currentRole.id);
+            else
+                return;
         }
     }
 

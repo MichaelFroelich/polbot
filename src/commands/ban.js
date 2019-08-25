@@ -1,6 +1,12 @@
-exports.run = (client, message, args) => {
-    let member = message.mentions.members.first() || message.guild.members.get(args[0]);
+const Util = require('../util.js');
 
+exports.run = (client, message, args) => {
+    var member = null;
+    try {
+        member = message.mentions.members.first() || Util.getMember(message.guild, args[0]);
+    } catch(error) {
+        return message.channel.send(error);
+    }
     if(!message.member.hasPermission("BAN_MEMBERS")){
         message.channel.send("You don't have the permissions to use this command!");
     }
