@@ -6,10 +6,18 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MichaelFroelich/polbot.git"
+  },
   "author": "Michael Froelich (Blue and Black)",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.5.1",
-    "fuzzyset.js": "0.0.8"
+    "enmap": "^5.1.2",
+    "fuzzyset.js": "0.0.8",
+    "long": "^4.0.0",
+    "moment": "^2.24.0",
+    "node-persist": "^3.0.5"
   }
 }
