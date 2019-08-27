@@ -2,6 +2,7 @@ require('./constants.js');
 const Log = require('./log.js');
 const FuzzySet = require('fuzzyset.js');
 const Util = require('./util.js');
+const PolUsers = require('./polusers.js')
 const EqualityAmount = 0.5;
 const FetchSize = 100;
 const StartingPosition = 10; //arbitrary number greater than the number of unmanaged roles, like staff
@@ -41,7 +42,7 @@ exports.setRole = function (reaction, user) {
     }
 }
 
-exports.removeRole = function (reaction, user) {
+exports.removeRole = async function (reaction, user) {
     var id = reaction.message.channel.id;
     var guild = reaction.message.guild;
     for (let role of Roles.values()) {
@@ -51,7 +52,6 @@ exports.removeRole = function (reaction, user) {
             }
             var realrole = getRoleFromGuild(role.name, guild);
             var roleid = realrole.id;
-            var userid = null;
             if (user === null) {
                 for (let member of guild.members.values()) {
                     if (member.roles.has(roleid)) {
@@ -61,10 +61,11 @@ exports.removeRole = function (reaction, user) {
                     }
                 }
             } else {
-                userid = user.id;
-                guild.members.get(userid).removeRole(roleid).then(
+                member = guild.members.get(user.id);
+                await member.removeRole(roleid).then(
                     value => Log.LogSuccess("remove role", value),
                     reason => Log.LogFail("remove role", reason));
+                PolUsers.create(member);
             }
         }
     }
@@ -86,12 +87,22 @@ exports.construct = function (CurrentClient) {
     for (let guild of Guilds.values()) {
         if (guild.memberCount > FetchSize)
             guild.fetchMembers('', guild.memberCount).then(
-                value => Log.LogSuccess("fetch members", value),
+                value => loadUsers(value.members),
                 reason => Log.LogFail("fetch members", reason));
     }
     loadRoals();
 }
 
+function loadUsers(users) {
+    Log.LogSuccess("fetch members", users);
+    try {
+        for (let user of users.values())
+            PolUsers.create(user);
+        Log.LogSuccess("loaded users", "users");
+    } catch(err) {
+        Log.LogFail("loaded users", err);
+    }
+}
 
 function loadRoals() {
     var roles = require(RolesFile);
@@ -277,7 +288,7 @@ function rolesEqual(first, second) {
     }
 }
 
-function addRole(role, member, override = false) {
+async function addRole(role, member, override = false) {
     realrole = getRoleFromGuild(role.name, member.guild);
     if(member.roles.has(realrole.id)) {
         return;
@@ -301,9 +312,10 @@ function addRole(role, member, override = false) {
     }
 
     currentRoles.set(role.id, realrole); //finally, add the role we actually want
-    member.setRoles(currentRoles).then(
+    await member.setRoles(currentRoles).then(
         value => Log.LogSuccess("add role", value),
-        reason => Log.LogFail("add role", reason));;
+        reason => Log.LogFail("add role", reason));
+    PolUsers.create(member);
 }
 
 function getAllExclusiveRoles(role, roles) {

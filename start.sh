@@ -1,4 +1,2 @@
 #!/bin/bash
-cd src
-nohup node ./main.js &
-cd ..
+nohup node ./src/main.js &

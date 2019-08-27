@@ -4,6 +4,7 @@ const Enmap = require('enmap');
 const fs = require('fs');
 const Log = require('./log.js');
 const RoleParser = require('./roleparser.js');
+const PolUser = require('./polusers.js');
 const client = new Discord.Client();
 client.commands = new Enmap();
 const Active = new Map();

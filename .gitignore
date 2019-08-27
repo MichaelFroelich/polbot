@@ -72,3 +72,6 @@ debug.log
 
 # PID
 pid.txt
+
+# database
+.node-persist

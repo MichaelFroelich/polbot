@@ -1,5 +1,5 @@
-const ms = require("ms");
 const Util = require('../util.js');
+const Users = require('../polusers.js');
 const MutedRole = "Muted";
 
 exports.run = async (bot, message, args) => {
@@ -30,11 +30,11 @@ exports.run = async (bot, message, args) => {
   }
 
   if (!mutetime) return message.reply("You didn't specify a time!");
-  var currentRoles = tomute.roles;
   await (tomute.setRoles([muterole]));
   message.reply(`<@${tomute.id}> has been muted for ${mutetime} minute${plural}`);
 
   setTimeout(function () {
+    currentRoles = await Users.read(tomute.id).roles;
     tomute.setRoles(currentRoles);
     message.channel.send(`<@${tomute.id}> has been unmuted!`);
   }, mutetime * 1000 * 60);
