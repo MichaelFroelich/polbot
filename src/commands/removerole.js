@@ -21,8 +21,8 @@ exports.run = async (client, message, args) => {
         return message.reply("They don't have that role.");
 
     else {
-        member.removeRole(gRole.id).catch(console.error);
-
+        await member.removeRole(gRole.id).catch(console.error);
+        Users.create(member);
         try {
             member.send(`Sorry,you lost the ${gRole.name} role`);
             message.channel.send(`The user ${member} has lost the ${gRole.name} role`);

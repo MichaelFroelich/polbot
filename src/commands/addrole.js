@@ -23,8 +23,8 @@ exports.run = async (client, message, args) => {
         return message.channel.send("They already have that role.");
 
     else {
-        member.addRole(gRole.id).catch(console.error);
-
+        await member.addRole(gRole.id).catch(console.error);
+        Users.create(member);
         try {
             member.send(`Congrats, you have been given the role ${gRole.name}`);
             message.channel.send(`The user ${member} has a new role ${gRole.name}`);

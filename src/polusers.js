@@ -25,7 +25,7 @@ exports.read = async function (memberid) {
 class PolUser {
     constructor(member) {
         this._roles = Array.from(member.roles.keys());
-        this._status = Status.ACTIVE;
+        this._status = 0;
     }
 
     get roles() { return this._roles; }
@@ -33,10 +33,4 @@ class PolUser {
 
     get roles() { return this._status; }
     set roles(roles) { this._status = Array.from(roles.keys()); }
-}
-
-const Status = {
-    BANNED: 1,
-    MUTE: 2,
-    ACTIVE: 3
 }
