@@ -12,7 +12,11 @@ exports.run = async (client, message, args) => {
     let reason = args.slice(1).join(' ');
     if (!reason) reason = "No reason provided";
 
+    this.ban(member, reason);
+}
+
+exports.ban = async(member, reason) => {
     member.ban(reason)
-        .catch(error => message.channel.send(`Sorry ${message.author} I couldn't ban the user`));
-    message.channel.send(`${member.user.tag} has been banned by ${message.author.tag} because: ${reason}`);
+        .catch(error => message.channel.send(`Sorry, I couldn't ban the user`));
+    message.channel.send(`${member.user.tag} has been banned because: ${reason}`);
 }

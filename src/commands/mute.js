@@ -13,13 +13,17 @@ exports.run = async (bot, message, args) => {
   }
   //end of create role
   let mutetime = parseInt(args[1]);
+
+  if (!mutetime) return message.reply("You didn't specify a time!");
+  this.mute(member, mutetime);
+}
+
+exports.mute = async (member, mutetime) => {
+  await (member.setRoles([muterole]));
   var plural = "";
   if (mutetime > 1) {
     plural = "s";
   }
-
-  if (!mutetime) return message.reply("You didn't specify a time!");
-  await (member.setRoles([muterole]));
   message.reply(`<@${member.id}> has been muted for ${mutetime} minute${plural}`);
 
   setTimeout(function () {

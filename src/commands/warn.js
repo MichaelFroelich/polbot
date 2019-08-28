@@ -1,5 +1,8 @@
 const Util = require('../util.js');
 const Users = require('../polusers.js');
+const Mute = require('./mute.js');
+const Kick = require('./kick.js');
+const Ban = require('./ban.js');
 
 exports.run = async (client, message, args) => {
     var member = null;
@@ -13,8 +16,28 @@ exports.run = async (client, message, args) => {
     // join(' ') takes all the various parts to make it a single string.
     let reason = args.slice(1).join(' ');
     if (!reason)
-        reason = "No reason provided";
-    member.kick(reason)
-        .catch(error => message.channel.send(`Sorry ${message.author} I couldn't kick because of : ${error}`));
-    message.channel.send(`${member.user.tag} has been kicked by ${message.author.tag} because: ${reason}`);
+        reason = "your transgressions.";
+
+    member.send(`You have been warned for ${reason}.`);
+    user = await Users.read(member.id);
+    user.status += 1;
+    switch (user.status) {
+        case 1:
+        case 2:
+        case 3:
+            Users.create(member.id, user);
+            break;
+        case 4:
+            Users.create(member.id, user);
+            Mute.mute(member, 10080); //one week
+            break;
+        case 5:
+            Kick.kick(member, reason);
+            break;
+        case 6:
+            Ban.ban(member, reason);
+            break;
+        default:
+            break;
+    }
 }
