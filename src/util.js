@@ -34,6 +34,24 @@ const Colors = {
 
 exports.LongMax = "18446744073709551615";
 
+exports.validate = function (message, permission) {
+    try {
+        toeffect = message.mentions.members.first() || this.getMember(message.guild, args[0]);
+      } catch (error) {
+        throw error;
+      }
+    if (!toeffect) {
+        throw "Couldn't find that user.";
+    }
+    if(!message.member.hasPermission(permission)){
+        throw "You don't have the permissions to use this command.";
+    }
+    if(tomute.hasPermission(permission)) {
+        throw "Cannot perform this command on this user.";
+    }
+    return toeffect;
+}
+
 exports.resolveColor = function (color) {
     if (typeof color === 'string') {
         if (color === 'RANDOM') return Math.floor(Math.random() * (0xFFFFFF + 1));
