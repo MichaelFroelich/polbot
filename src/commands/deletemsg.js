@@ -7,7 +7,6 @@ exports.run = (client, message, args) => {
     }
 
     else {
-      // Ooooh nice, combined conditions. <3
       if (!deleteCount || deleteCount < 2 || deleteCount > 100)
         return message.channel.send("Please provide a number between 2 and 100 for the number of messages to delete");
 

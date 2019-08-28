@@ -2,7 +2,7 @@ exports.run = (client, message, args) => {
 
     var member = null;
     try {
-        member = Util.validate(message, "MANAGE_ROLES_OR_PERMISSIONS");
+        member = Util.validate(message, "MANAGE_ROLES_OR_PERMISSIONS", true);
     } catch (error) {
         return message.channel.send(error);
     }
@@ -31,5 +31,4 @@ exports.run = (client, message, args) => {
             message.channel.send(`Congrats to <@${member.id}>, they have been given the role ${gRole.name}.`)
         }
     }
-}
 }

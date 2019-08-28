@@ -27,5 +27,4 @@ exports.run = async (bot, message, args) => {
     member.setRoles(currentRoles);
     message.channel.send(`<@${member.id}> has been unmuted!`);
   }, mutetime * 1000 * 60);
-
 }

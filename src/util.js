@@ -34,7 +34,7 @@ const Colors = {
 
 exports.LongMax = "18446744073709551615";
 
-exports.validate = function (message, permission) {
+exports.validate = function (message, permission, alwaysperform = false) {
     try {
         toeffect = message.mentions.members.first() || this.getMember(message.guild, args[0]);
       } catch (error) {
@@ -46,7 +46,7 @@ exports.validate = function (message, permission) {
     if(!message.member.hasPermission(permission)){
         throw "You don't have the permissions to use this command.";
     }
-    if(tomute.hasPermission(permission)) {
+    if(!alwaysperform && tomute.hasPermission(permission)) {
         throw "Cannot perform this command on this user.";
     }
     return toeffect;

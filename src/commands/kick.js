@@ -1,6 +1,6 @@
 const Util = require('../util.js');
 
-exports.run = (client, message, args) => {
+exports.run = async (client, message, args) => {
     var member = null;
     try {
         member = Util.validate(message, "KICK_MEMBERS");
@@ -12,7 +12,8 @@ exports.run = (client, message, args) => {
     let reason = args.slice(1).join(' ');
     if (!reason)
         reason = "No reason provided";
-    member.kick(reason)
+    await member.kick(reason)
         .catch(error => message.channel.send(`Sorry ${message.author} I couldn't kick because of : ${error}`));
+    
     message.channel.send(`${member.user.tag} has been kicked by ${message.author.tag} because: ${reason}`);
 }
