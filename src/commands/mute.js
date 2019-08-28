@@ -4,9 +4,9 @@ const MutedRole = "Muted";
 
 exports.run = async (bot, message, args) => {
   var member = null;
-  var muterole = null
+  var muterole = null;
   try {
-    member = Util.validate(message, "MANAGE_MESSAGES");
+    member = Util.validate(message, args, "MANAGE_MESSAGES");
     muterole = message.guild.roles.find("name", MutedRole);
   } catch (error) {
     return message.channel.send(error);

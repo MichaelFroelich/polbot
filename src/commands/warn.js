@@ -1,10 +1,10 @@
 const Util = require('../util.js');
 const Users = require('../polusers.js');
 
-exports.run = (client, message, args) => {
+exports.run = async (client, message, args) => {
     var member = null;
     try {
-        member = Util.validate(message, "MANAGE_MESSAGES");
+        member = Util.validate(message, args, "MANAGE_MESSAGES");
     } catch (error) {
         return message.channel.send(error);
     }

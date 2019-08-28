@@ -34,7 +34,7 @@ const Colors = {
 
 exports.LongMax = "18446744073709551615";
 
-exports.validate = function (message, permission, alwaysperform = false) {
+exports.validate = function (message, args, permission, alwaysperform = false) {
     try {
         toeffect = message.mentions.members.first() || this.getMember(message.guild, args[0]);
       } catch (error) {

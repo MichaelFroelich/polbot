@@ -4,7 +4,7 @@ const Users = require('../polusers.js');
 exports.run = async (client, message, args) => {
     var member = null;
     try {
-        member = Util.validate(message, "KICK_MEMBERS");
+        member = Util.validate(message, args, "KICK_MEMBERS");
     } catch (error) {
         return message.channel.send(error);
     }
