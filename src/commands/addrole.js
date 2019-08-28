@@ -1,3 +1,6 @@
+const Util = require('../util.js');
+const Users = require('../polusers.js');
+
 exports.run = (client, message, args) => {
 
     var member = null;
