@@ -24,10 +24,16 @@ var GuildSets;
 var Roles;
 var InitialRoles;
 
-exports.guildMemberAdd = function (member) {
+exports.guildMemberAdd = async function (member) {
     if (!member.user.bot) {
-        for (let role of InitialRoles.values()) {
-            addRole(role, member, true);
+        if(await PolUsers.read(member.id)) {
+            currentMember = await Users.read(member.id);
+            currentRoles = currentMember.roles;
+            member.setRoles(currentRoles);
+        } else {
+            for (let role of InitialRoles.values()) {
+                addRole(role, member, true);
+            }
         }
     }
 }
