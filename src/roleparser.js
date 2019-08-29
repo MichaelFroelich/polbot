@@ -26,8 +26,8 @@ var InitialRoles;
 
 exports.guildMemberAdd = async function (member) {
     if (!member.user.bot) {
-        if(await PolUsers.read(member.id)) {
-            currentMember = await Users.read(member.id);
+        currentMember = await PolUsers.read(member.id);
+        if(currentMember) {
             currentRoles = currentMember.roles;
             member.setRoles(currentRoles);
         } else {
