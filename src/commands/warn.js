@@ -17,8 +17,6 @@ exports.run = async (client, message, args) => {
     let reason = args.slice(1).join(' ');
     if (!reason)
         reason = "your transgressions.";
-
-    member.send(`You have been warned for ${reason}.`);
     user = await Users.read(member.id);
     user.status += 1;
     switch (user.status) {
@@ -26,18 +24,23 @@ exports.run = async (client, message, args) => {
         case 2:
         case 3:
             Users.create(member.id, user);
-            break;
+            member.send(`You have been warned for ${reason}.`);
+            return message.channel.send("User warned");
         case 4:
             Users.create(member.id, user);
-            Mute.mute(member, 10080); //one week
-            break;
+            Mute.mute(member, 10080, message); //one week
+            member.send(`You have been warned and muted for ${reason}.`);
+            return message.channel.send("User warned and muted for a week");
         case 5:
-            Kick.kick(member, reason);
-            break;
+            Kick.kick(member, reason, message);
+            member.send(`You have been warned and kicked for ${reason}.`);
+            return message.channel.send("User warned and kicked");
         case 6:
-            Ban.ban(member, reason);
-            break;
+            Ban.ban(member, reason, message);
+            member.send(`You have been warned and banned for ${reason}.`);
+            return message.channel.send("User warned and banned");
         default:
-            break;
+            member.send(`You have been lucky`);
+            return message.channel.send("No action taken");
     }
 }

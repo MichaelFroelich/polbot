@@ -10,7 +10,7 @@ exports.run = async (client, message, args) => {
         return message.channel.send(error);
     }
 
-    let role = args.join(" ").slice(22);
+    let role = args.slice(1).join(' ');
     if (!role)
         return message.channel.send("Specify a role!");
 

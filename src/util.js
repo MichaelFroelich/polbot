@@ -46,7 +46,7 @@ exports.validate = function (message, args, permission, alwaysperform = false) {
     if(!message.member.hasPermission(permission)){
         throw "You don't have the permissions to use this command.";
     }
-    if(!alwaysperform && tomute.hasPermission(permission)) {
+    if(!alwaysperform && toeffect.hasPermission(permission)) {
         throw "Cannot perform this command on this user.";
     }
     return toeffect;

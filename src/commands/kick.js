@@ -13,10 +13,10 @@ exports.run = async (client, message, args) => {
     let reason = args.slice(1).join(' ');
     if (!reason)
         reason = "No reason provided";
-    this.kick(member, reason);
+    this.kick(member, reason, message);
 }
 
-exports.kick = async (member, reason) => {
+exports.kick = async (member, reason, message) => {
     await member.kick(reason)
         .catch(error => message.channel.send(`Sorry, I couldn't kick because of : ${error}`));
 
