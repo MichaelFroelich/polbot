@@ -13,38 +13,42 @@
             "persistent": true,
             "roles": {
                 "Anarchist": {
+                    "starboards": ["616028335608168506"],
                     "color": "BLACK",
                     "reaction": "1️⃣"
                 },
                 "Communist": {
+                    "starboards": ["616028016396730410"],
                     "color": "RED",
                     "reaction": "2️⃣"
                 },
                 "Fascist": {
+                    "starboards": ["616028257246248972"],
                     "color": "9c6e18",
                     "reaction": "3️⃣"
                 },
-                "Corporatist": {
-                    "color": "GREY",
-                    "reaction": "4️⃣"
-                },
                 "Capitalist": {
+                    "starboards": ["616028579553345562"],
                     "color": "GOLD",
                     "reaction": "5️⃣"
                 },
                 "Socialist": {
+                    "starboards": ["616028159300599846"],
                     "color": "ORANGE",
                     "reaction": "6️⃣"
                 },
                 "Liberal": {
+                    "starboards": ["616028081127292968"],
                     "color": "00aef3",
                     "reaction": "7️⃣"
                 },
                 "Conservative": {
+                    "starboards": ["616028422606422049"],
                     "color": "7851a9", 
                     "reaction": "8️⃣"
                 },
                 "Centrist": {
+                    "starboards": ["616028492777259122"],
                     "color": "d0c1b1", 
                     "reaction": "9"
                 }

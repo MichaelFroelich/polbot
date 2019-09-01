@@ -16,6 +16,9 @@ const DefaultRole = {
     permissions: [],
     roles: {}
 };
+const ViewPermissions = ["READ_MESSAGE_HISTORY", "VIEW_CHANNEL"];
+const SendPermission = "SEND_MESSAGES";
+const ReactPermission = "ADD_REACTIONS";
 
 var position;
 var Client;
@@ -86,15 +89,16 @@ function reactionEquals(discordReaction, ourReaction) {
 /**
  * @param {Client} CurrentClient
  */
-exports.construct = function (CurrentClient) {
+exports.construct = async function (CurrentClient) {
     position = StartingPosition;
     Client = CurrentClient;
     Guilds = Client.guilds;
     for (let guild of Guilds.values()) {
-        if (guild.memberCount > FetchSize)
+        if (guild.memberCount > FetchSize) {
             guild.fetchMembers('', guild.memberCount).then(
                 value => loadUsers(value.members),
                 reason => Log.LogFail("fetch members", reason));
+        }
     }
     loadRoals();
 }
@@ -132,7 +136,7 @@ function populateGuildSets() {
     }
 }
 
-function createRoles(parentRole, currentRole) {
+async function createRoles(parentRole, currentRole) {
     var roleName = currentRole[0];
     var defaultedRole = AssignUndefined(currentRole[1], parentRole);
     defaultedRole.position = position++;
@@ -148,7 +152,7 @@ function createRoles(parentRole, currentRole) {
     //find all the roles in the json structure
     if (defaultedRole.roles !== undefined) {
         for (let role of Object.entries(defaultedRole.roles)) {
-            createRoles(defaultedRole, role);
+            await createRoles(defaultedRole, role);
         }
     }
 
@@ -158,7 +162,7 @@ function createRoles(parentRole, currentRole) {
     for (let guild of Guilds.values()) {
         let existingRole = checkIfRoleExists(roleName, guild);
         if (existingRole == null) {
-            guild.createRole(mappedRole).then(
+            existingRole = await guild.createRole(mappedRole).then(
                 value => Log.LogSuccess("create role", value),
                 reason => Log.LogFail("create role", reason));
         }
@@ -172,9 +176,28 @@ function createRoles(parentRole, currentRole) {
                     reason => Log.LogFail("edit role", reason));
             }
         }
+        applyChannelPermissions(existingRole, defaultedRole, guild);
     }
     processReactions(defaultedRole); //check the role channels
     //processVacancies(defaultedRole); //check the role channels
+}
+
+function applyChannelPermissions(existingRole, defaultedRole, guild) {
+    var itteratingRole = defaultedRole;
+    for(role = defaultedRole ; itteratingRole.parent !== undefined ; itteratingRole = itteratingRole.parent) {
+        for (let channel of itteratingRole.channels.values()) {
+            var permissions = channel.permissionsFor(existingRole.id);
+            if(channel.permissionsFor(existingRole.id) !== "whatever") {
+
+            }
+        }
+        for (let channel of itteratingRole.starboards.values()) {
+            var permissions = channel.permissionsFor(existingRole.id);
+            if(channel.permissionsFor(existingRole.id) !== "whatever") {
+
+            }
+        }
+    }
 }
 
 function addRoleChannel(roleChannels) {
