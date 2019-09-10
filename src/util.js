@@ -178,3 +178,15 @@ function getUnicodeLength(str) {
     //assuming the joiners are used appropriately
     return count / split.length;
 }
+
+exports.resolveChannel = function (guild, channel) {
+    if(channel.id !== undefined) {
+        return channel; //already resolved
+    }
+    if(channel.match(/^-{0,1}\d+$/)){
+        return guild.channels.get(channel);
+    }
+    else {
+        return guild.channels.find('name', channel);
+    }
+}

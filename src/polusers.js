@@ -32,5 +32,7 @@ class PolUser {
     constructor(member) {
         this.roles = Array.from(member.roles.keys());
         this.status = 0;
+        this.points = new Map();
+        this.party = member.party;
     }
 }

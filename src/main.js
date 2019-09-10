@@ -5,6 +5,7 @@ const fs = require('fs');
 const Log = require('./log.js');
 const RoleParser = require('./roleparser.js');
 const PolUser = require('./polusers.js');
+const DeletedMessage = require('./deletedmessagelog.js');
 const client = new Discord.Client();
 client.commands = new Enmap();
 const Active = new Map();
@@ -40,12 +41,19 @@ client.on('guildCreate', (client, guild) =>Log.write(`Joined ${guild.name} (${gu
 client.on('guildDelete', (client, guild) => Log.write(`Left ${guild.name} (${guild.id}) removed the bot.`));
 client.on("guildMemberAdd", (member) => newMember(member));
 client.on("message", (message) => newMessage(message));
-
+client.on('messageDelete', (message) =>  DeletedMessage.deletedMessage(message));
+client.on('messageUpdate', (oldmessage, newmessage) =>  DeletedMessage.modifiedMessage(oldmessage, newmessage));
 /*
 	Role Parsing here
 */
-client.on('messageReactionAdd', (reaction, user) => RoleParser.setRole(reaction, user));
-client.on('messageReactionRemove', (reaction, user) => RoleParser.removeRole(reaction, user));
+client.on('messageReactionAdd', (reaction, user) => {
+	RoleParser.setRole(reaction, user); 
+	Game.reacted(reaction, user);
+});
+client.on('messageReactionRemove', (reaction, user) => {
+	RoleParser.removeRole(reaction, user);
+	Game.unReacted(reaction, user);
+});
 client.on('messageReactionRemoveAll', (reaction) => RoleParser.removeRole(reaction, null));
 
 //Code snippet that forces events to be called

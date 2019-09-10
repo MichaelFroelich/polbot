@@ -16,9 +16,6 @@ const DefaultRole = {
     permissions: [],
     roles: {}
 };
-const ViewPermissions = ["READ_MESSAGE_HISTORY", "VIEW_CHANNEL"];
-const SendPermission = "SEND_MESSAGES";
-const ReactPermission = "ADD_REACTIONS";
 
 var position;
 var Client;
@@ -27,10 +24,20 @@ var GuildSets;
 var Roles;
 var InitialRoles;
 
+var Permissions = null;
+function getPermissions() {
+    if(Permissions === null) {
+        Permissions = 0;
+        Permissions &= 1 << 16; //read channel
+        Permissions &= 1 << 10; //view channel
+    }
+    return Permissions
+}
+
 exports.guildMemberAdd = async function (member) {
     if (!member.user.bot) {
         currentMember = await PolUsers.read(member.id);
-        if(currentMember) {
+        if (currentMember) {
             currentRoles = currentMember.roles;
             member.setRoles(currentRoles);
         } else {
@@ -81,7 +88,7 @@ exports.removeRole = async function (reaction, user) {
 }
 
 function reactionEquals(discordReaction, ourReaction) {
-    if(Util.resolveReaction(discordReaction) === Util.resolveReaction(ourReaction))
+    if (Util.resolveReaction(discordReaction) === Util.resolveReaction(ourReaction))
         return true;
     else return false;
 }
@@ -109,7 +116,7 @@ function loadUsers(users) {
         for (let user of users.values())
             PolUsers.create(user);
         Log.LogSuccess("loaded users", "users");
-    } catch(err) {
+    } catch (err) {
         Log.LogFail("loaded users", err);
     }
 }
@@ -165,6 +172,7 @@ async function createRoles(parentRole, currentRole) {
             existingRole = await guild.createRole(mappedRole).then(
                 value => Log.LogSuccess("create role", value),
                 reason => Log.LogFail("create role", reason));
+            applyChannelPermissions(existingRole, defaultedRole, guild);
         }
         else {
             if (existingRole.name === "@everyone") {
@@ -174,28 +182,27 @@ async function createRoles(parentRole, currentRole) {
                 existingRole.edit(mappedRole).then(
                     value => Log.LogSuccess("edit role", value),
                     reason => Log.LogFail("edit role", reason));
+                applyChannelPermissions(existingRole, defaultedRole, guild);
             }
         }
-        applyChannelPermissions(existingRole, defaultedRole, guild);
     }
     processReactions(defaultedRole); //check the role channels
     //processVacancies(defaultedRole); //check the role channels
 }
 
 function applyChannelPermissions(existingRole, defaultedRole, guild) {
-    var itteratingRole = defaultedRole;
-    for(role = defaultedRole ; itteratingRole.parent !== undefined ; itteratingRole = itteratingRole.parent) {
+    if(!ManageChannelPermissions)
+        return;
+    for (var itteratingRole = defaultedRole; itteratingRole.parent !== undefined; itteratingRole = itteratingRole.parent) {
         for (let channel of itteratingRole.channels.values()) {
-            var permissions = channel.permissionsFor(existingRole.id);
-            if(channel.permissionsFor(existingRole.id) !== "whatever") {
-
-            }
+            var realchannel = Util.resolveChannel(guild, channel);
+            if(realchannel !== null)
+                realchannel.overwritePermissions(existingRole, getPermissions());
         }
         for (let channel of itteratingRole.starboards.values()) {
-            var permissions = channel.permissionsFor(existingRole.id);
-            if(channel.permissionsFor(existingRole.id) !== "whatever") {
-
-            }
+            var realchannel = Util.resolveChannel(guild, channel);
+            if(realchannel !== null)
+                realchannel.overwritePermissions(existingRole, getPermissions());
         }
     }
 }
@@ -204,7 +211,7 @@ function addRoleChannel(roleChannels) {
     var channels = new Map();
     for (let roleChannel of roleChannels) {
         for (let guild of Guilds.values()) {
-            realChannel = guild.channels.get(roleChannel);
+            realChannel = Util.resolveChannel(guild, roleChannel);
             if (realChannel)
                 channels.set(realChannel.id, realChannel);
         }
@@ -319,43 +326,55 @@ function rolesEqual(first, second) {
 
 async function addRole(role, member, override = false) {
     realrole = getRoleFromGuild(role.name, member.guild);
-    if(member.roles.has(realrole.id)) {
+    if (member.roles.has(realrole.id)) {
         return;
     }
-    if(role.persistent === true) {
+    if (role.persistent === true) {
         override = true;
     }
-    
-    role.id = realrole.id;
+
+    member.party = getParty(role); //A party is not quite a role
     var currentRoles = member.roles;
     var toRemove = new Map();
     getAllExclusiveRoles(role, toRemove);
-    for(let currentRole of currentRoles.values()) {
-        if(toRemove.has(currentRole.name)) {
+    for (let currentRole of currentRoles.values()) {
+        if (toRemove.has(currentRole.name)) {
             currentRole.id = getRoleFromGuild(currentRole.name, member.guild).id;
-            if(override === true) 
+            if (override === true)
                 currentRoles.delete(currentRole.id);
             else
                 return;
         }
     }
 
-    currentRoles.set(role.id, realrole); //finally, add the role we actually want
+    currentRoles.set(realrole.id, realrole); //finally, add the role we actually want
     await member.setRoles(currentRoles).then(
         value => Log.LogSuccess("add role", value),
         reason => Log.LogFail("add role", reason));
     PolUsers.create(member);
 }
 
+function getParty(role) {
+    if(role.starboards === undefined) {
+        if(role.parent === undefined) {
+            return null;
+        } else {
+            return getParty(role.parent);
+        }
+    } else {
+        return role;
+    }
+}
+
 function getAllExclusiveRoles(role, roles) {
     if (role.exclusive) {
         for (let sibling of Object.values(role.parent.roles)) {
-            if(sibling.exclusive && !sibling.persistent) {
+            if (sibling.exclusive && !sibling.persistent) {
                 roles.set(sibling.name, sibling);
             }
         }
     }
-    if(role.parent.parent !== undefined && role.parent.exclusive) {
+    if (role.parent.parent !== undefined && role.parent.exclusive) {
         getAllExclusiveRoles(role.parent, roles);
     }
 }
