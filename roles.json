@@ -51,6 +51,34 @@
                     "starboards": ["616028492777259122"],
                     "color": "d0c1b1", 
                     "reaction": "9"
+                },
+                "recognition roles": {
+                    "category": true,
+                    "initial": true,
+                    "exclusive": false,
+                    "roles": {
+                        "Novice": {
+                            "level": 0
+                        },
+                        "Student": {
+                            "level": 3
+                        },
+                        "Academian": {
+                            "level": 8
+                        },
+                        "Pioneer": {
+                            "level": 14
+                        },
+                        "Scholar": {
+                            "level": 23
+                        },
+                        "Intellectual": {
+                            "level": 35
+                        },
+                        "Genius": {
+                            "level": 50
+                        }
+                    }
                 }
             }
         }

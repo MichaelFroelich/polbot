@@ -151,15 +151,21 @@ async function createRoles(parentRole, currentRole) {
     defaultedRole.name = roleName;
     defaultedRole.parent = parentRole; //used later for finding mutually exclusive roles
     defaultedRole.parent.roles[defaultedRole.name] = defaultedRole;
-    Roles.set(roleName, defaultedRole);
-    if (defaultedRole.initial) {
-        InitialRoles.set(roleName, defaultedRole);
-    }
 
     //find all the roles in the json structure
     if (defaultedRole.roles !== undefined) {
         for (let role of Object.entries(defaultedRole.roles)) {
             await createRoles(defaultedRole, role);
+        }
+    }
+
+    //do not create categories as roles
+    if (currentRole.category !== undefined && currentRole.category === true) {
+        return;
+    } else {
+        Roles.set(roleName, defaultedRole);
+        if (defaultedRole.initial) {
+            InitialRoles.set(roleName, defaultedRole);
         }
     }
 
@@ -382,7 +388,7 @@ function getAllExclusiveRoles(role, roles) {
 function AssignUndefined(destination, source) {
     var toreturn = new Object();
     for (let property of Object.keys(source)) {
-        if (!destination.hasOwnProperty(property) && property !== "persistent") {
+        if (!destination.hasOwnProperty(property) && property !== "persistent" && property !== "category") {
             toreturn[property] = source[property];
         } else {
             toreturn[property] = destination[property];
