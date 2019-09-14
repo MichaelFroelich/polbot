@@ -24,8 +24,26 @@ exports.create = async function (member, data = null) {
     }
 }
 
+exports.addPoint = async function (memberid) {
+    var user = this.read(memberid);
+    user.points++;
+    this.create(user);
+}
+
+exports.removePoint = async function (memberid, points) {
+    var user = this.read(memberid);
+    user.points -= points;
+    this.create(user);
+}
+
+exports.stripPoint = async function (memberid) {
+    var user = this.read(memberid);
+    user.points = 0;
+    this.create(user);
+}
+
 exports.read = async function (memberid) {
-    return await Users.getItem(memberid);
+    return Users.getItem(memberid);
 }
 
 class PolUser {
