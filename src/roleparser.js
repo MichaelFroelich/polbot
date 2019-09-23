@@ -158,12 +158,12 @@ async function createRoles(parentRole, currentRole) {
             await createRoles(defaultedRole, role);
         }
     }
+    Roles.set(roleName, defaultedRole);
 
     //do not create categories as roles
     if (currentRole.category !== undefined && currentRole.category === true) {
         return;
     } else {
-        Roles.set(roleName, defaultedRole);
         if (defaultedRole.initial) {
             InitialRoles.set(roleName, defaultedRole);
         }
@@ -388,7 +388,10 @@ function getAllExclusiveRoles(role, roles) {
 function AssignUndefined(destination, source) {
     var toreturn = new Object();
     for (let property of Object.keys(source)) {
-        if (!destination.hasOwnProperty(property) && property !== "persistent" && property !== "category") {
+        if (!destination.hasOwnProperty(property) 
+            && property !== "persistent" 
+            && property !== "category"
+            && property !== "starboards") {
             toreturn[property] = source[property];
         } else {
             toreturn[property] = destination[property];
